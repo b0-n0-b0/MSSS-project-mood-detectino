@@ -1,0 +1,37 @@
+services:
+
+  MSSS-project-backend:
+    image: MSSS/backend
+    build: ./backend/
+    environment:
+      DBPASS: root
+      DBUSER: root
+      DBSCHEMA: MSSS_db
+      DBHOST: MSSS-project-database
+      DBPORT: 3306
+    networks:
+      - MSSS-project-intranet
+    depends_on:
+      MSSS-project-database:
+        condition: service_healthy
+
+  MSSS-project-database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    command:
+      - --datadir=/var/lib/mysql-no-volume
+      - --default-authentication-plugin=caching_sha2_password
+    volumes:
+      - ./database/db.sql:/docker-entrypoint-initdb.d/db.sql
+    networks:
+      - MSSS-project-intranet
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 6s
+      retries: 10
+
+networks:
+  MSSS-project:
+  MSSS-project-intranet:

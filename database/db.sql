@@ -1,0 +1,8 @@
+
+CREATE DATABASE IF NOT EXISTS MSSS_db;
+USE MSSS_db;
+
+CREATE TABLE users (
+    username VARCHAR(30) PRIMARY KEY,
+    password VARCHAR(150) NOT NULL
+);
