@@ -15,9 +15,6 @@
         android:theme="@style/Theme.MSSSfeel_your_music"
         tools:targetApi="31">
         <activity
-            android:name=".SpotifyLoginActivity"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
