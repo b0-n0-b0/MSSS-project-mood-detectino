@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         val extras = it.extras
                         extras?.let { bundle ->
                             val result = bundle.getBoolean("success")
-                            Log.d("something","Success: $result")
+                            Log.d("spotifyLogin","Success: $result")
                             if(result){
                                 connected()
                             }
