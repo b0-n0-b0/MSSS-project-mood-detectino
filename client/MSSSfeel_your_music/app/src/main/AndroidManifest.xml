@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MSSSfeel_your_music"
         tools:targetApi="31">
+        <service
+            android:name=".SpotifyService"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
