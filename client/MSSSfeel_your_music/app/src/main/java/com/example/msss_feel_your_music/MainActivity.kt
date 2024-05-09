@@ -36,14 +36,14 @@ class MainActivity : ComponentActivity() {
             .showAuthView(true)
             .build()
         //NOTE: tries to connect to the spotify application
-//        SpotifyAppRemote.disconnect(spotifyAppRemote);
+        SpotifyAppRemote.disconnect(spotifyAppRemote)
         SpotifyAppRemote.connect(this, connectionParams, object : Connector.ConnectionListener {
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyAppRemote = appRemote
                 connected()
             }
             override fun onFailure(error: Throwable) {
-                Log.d("Main Activity","Failed to connect")
+                Log.d("Main Activity","Failed to connect: $error")
                 when (error) {
                     is CouldNotFindSpotifyApp -> {
                         if (!SpotifyAppRemote.isSpotifyInstalled(applicationContext)){
