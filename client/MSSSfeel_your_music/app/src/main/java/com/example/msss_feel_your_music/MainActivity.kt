@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 
+    //TODO: add broadcast receiver and handle back messages from spotify service
     private fun connected() {
         val isConnected = spotifyService.connectToSpotify()
         if(!isConnected){

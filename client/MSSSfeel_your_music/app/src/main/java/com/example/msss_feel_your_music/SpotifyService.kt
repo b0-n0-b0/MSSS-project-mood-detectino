@@ -11,6 +11,7 @@ import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.spotify.android.appremote.api.error.CouldNotFindSpotifyApp
 import com.spotify.android.appremote.api.error.NotLoggedInException
 import com.spotify.android.appremote.api.error.UserNotAuthorizedException
+import com.spotify.protocol.types.Track
 
 class SpotifyService : Service() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
@@ -37,9 +38,10 @@ class SpotifyService : Service() {
         SpotifyAppRemote.connect(this, connectionParams, object : Connector.ConnectionListener {
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyAppRemote = appRemote
+                Log.d("SpotifyService","connected")
             }
             override fun onFailure(error: Throwable) {
-                Log.d("Main Activity","Failed to connect")
+                Log.d("SpotifyService","not connected")
                 when (error) {
                     is CouldNotFindSpotifyApp -> {
                         connected = false
@@ -49,7 +51,19 @@ class SpotifyService : Service() {
         })
         return connected
     }
-    
+    fun test(){
+        spotifyAppRemote?.let {
+            // Play a playlist
+            val playlistURI = "spotify:playlist:37i9dQZF1DX2sUQwD7tbmL"
+            it.playerApi.play(playlistURI)
+            // Subscribe to PlayerState
+            it.playerApi.subscribeToPlayerState().setEventCallback {
+                val track: Track = it.track
+                Log.d("MainActivity", track.name + " by " + track.artist.name)
+            }
+        }
+    }
+
     fun insertInQueue(songId: String){
         spotifyAppRemote?.playerApi?.queue(songId)
     }
