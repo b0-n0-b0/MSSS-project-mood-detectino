@@ -25,7 +25,7 @@ class SpotifyService : Service() {
         return binder
     }
 
-    fun connectToSpotify(): Boolean {
+    fun connectToSpotify() {
         val clientId = getString(R.string.CLIENT_ID)
         val redirectUri = getString(R.string.REDIRECT_URI)
         val connectionParams = ConnectionParams.Builder(clientId)
@@ -35,10 +35,14 @@ class SpotifyService : Service() {
 
         SpotifyAppRemote.disconnect(spotifyAppRemote);
         var connected = true
+        val intent = Intent()
+        intent.setAction("com.example.msss_feel_your_music.spotifyConnectionAction")
         SpotifyAppRemote.connect(this, connectionParams, object : Connector.ConnectionListener {
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyAppRemote = appRemote
                 Log.d("SpotifyService","connected")
+                intent.putExtra("result", connected)
+                sendBroadcast(intent)
             }
             override fun onFailure(error: Throwable) {
                 Log.d("SpotifyService","not connected")
@@ -47,9 +51,10 @@ class SpotifyService : Service() {
                         connected = false
                     }
                 }
+                intent.putExtra("result", connected)
+                sendBroadcast(intent)
             }
         })
-        return connected
     }
     fun test(){
         spotifyAppRemote?.let {
