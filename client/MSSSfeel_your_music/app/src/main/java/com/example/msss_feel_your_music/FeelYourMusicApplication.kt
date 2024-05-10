@@ -24,10 +24,10 @@ class FeelYourMusicApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        logDatabaseContents()
+//        logDatabaseContents()
     }
 
-    private fun logDatabaseContents(){
+    fun logDatabaseContents(){
         GlobalScope.launch(Dispatchers.IO){
 
             val tracks = repository.allTracks

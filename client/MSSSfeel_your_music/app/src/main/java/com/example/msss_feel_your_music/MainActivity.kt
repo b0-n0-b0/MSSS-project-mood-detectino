@@ -18,17 +18,38 @@ import com.spotify.android.appremote.api.error.CouldNotFindSpotifyApp
 import com.spotify.android.appremote.api.error.NotLoggedInException
 import com.spotify.android.appremote.api.error.UserNotAuthorizedException
 import com.spotify.protocol.types.Track
-
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter
+import com.example.msss_feel_your_music.app_broadcast_receiver.MyBroadcastReceiver
+import com.example.msss_feel_your_music.FeelYourMusicApplication
 
 private var spotifyAppRemote: SpotifyAppRemote? = null
 
 class MainActivity : ComponentActivity() {
+    private val receiver = MyBroadcastReceiver()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        // TODO Receiver
+        val filter = IntentFilter().apply {
+            addAction("com.spotify.music.metadatachanged")
+            addAction("com.spotify.music.queuechanged")
+            addAction("com.spotify.music.playbackstatechanged")
+        }
+        registerReceiver(receiver, filter, RECEIVER_EXPORTED)
+
+        // TODO Access db
+        (application as? FeelYourMusicApplication)?.logDatabaseContents()
+
+
     }
 
     override fun onStart() {
         super.onStart()
+
         val clientId = getString(R.string.CLIENT_ID)
         val redirectUri = getString(R.string.REDIRECT_URI)
         val connectionParams = ConnectionParams.Builder(clientId)
@@ -60,6 +81,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         })
+
     }
 
     private val spotifyLoginLauncher = registerForActivityResult<Intent, ActivityResult>(
@@ -102,5 +124,11 @@ class MainActivity : ComponentActivity() {
         spotifyAppRemote?.let {
             SpotifyAppRemote.disconnect(it)
         }
+    }
+
+    // TODO: Lifecycle broadcast receiver
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
     }
 }
