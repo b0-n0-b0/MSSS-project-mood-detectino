@@ -1,4 +1,4 @@
-package com.example.msss_feel_your_music.database
+package com.example.msss_feel_your_music.room.database
 
 import android.content.Context
 import android.util.Log
@@ -6,19 +6,24 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.msss_feel_your_music.daos.TrackInfoDao
-import com.example.msss_feel_your_music.entities.TrackInfo
+import com.example.msss_feel_your_music.room.daos.TrackInfoDao
+import com.example.msss_feel_your_music.room.entities.TrackInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+// The database contains just one table with track informations
 @Database(entities = [TrackInfo::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase(){
+
+    // Reference to the dao execute the queries
     abstract fun trackInfoDao(): TrackInfoDao
 
+    // Callback with coroutine to cerate the database
     private class AppDatabaseCallback(
         private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
+        // When the database is created
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
 
@@ -31,6 +36,7 @@ abstract class AppDatabase : RoomDatabase(){
             }
         }
 
+        // DEBUG Database population mockup
         suspend fun populateDatabase(trackInfoDao: TrackInfoDao) {
             Log.d("AppDatabase","populate db")
 
@@ -46,6 +52,7 @@ abstract class AppDatabase : RoomDatabase(){
         }
     }
 
+    // To ensure a single instance of the database
     companion object {
         // Singleton prevents multiple instances of database opening at the
         // same time.

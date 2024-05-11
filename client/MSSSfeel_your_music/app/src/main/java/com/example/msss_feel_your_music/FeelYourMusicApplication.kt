@@ -3,9 +3,9 @@ package com.example.msss_feel_your_music
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.example.msss_feel_your_music.database.AppDatabase
-import com.example.msss_feel_your_music.entities.TrackInfo
-import com.example.msss_feel_your_music.repository.AppRepository
+import com.example.msss_feel_your_music.room.database.AppDatabase
+import com.example.msss_feel_your_music.room.entities.TrackInfo
+import com.example.msss_feel_your_music.room.repository.AppRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,12 +21,14 @@ class FeelYourMusicApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this, applicationScope) }
     val repository by lazy { AppRepository(database.trackInfoDao()) }
 
+    // When the application is created
     override fun onCreate() {
         super.onCreate()
 
 //        logDatabaseContents()
     }
 
+    // DEBUG to show the track stored in the database
     fun logDatabaseContents(){
         GlobalScope.launch(Dispatchers.IO){
 

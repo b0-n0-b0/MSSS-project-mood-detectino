@@ -5,17 +5,25 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-public open class MyBroadcastReceiver : BroadcastReceiver() {
+public open class PlayerBroadcastReceiver : BroadcastReceiver() {
 
+    // Intents this BroadcastReceiver can receive
     internal object BroadcastTypes {
         const val SPOTIFY_PACKAGE = "com.spotify.music"
-        const val PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged"
-        const val QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged"
+
+        // This intent is sent when a new track starts playing
         const val METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged"
+
+        // This intent is sent when the play queue is changed
+        const val QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged"
+
+        // This intent is sent whenever the user presses play/pause, or when seeking the track position
+        const val PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged"
     }
 
+    // When an intent is received
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("BroadcastRec","Intent: $intent")
+        Log.d("PlayerBroadcastReceiver","Intent: $intent")
         // This is sent with all broadcasts, regardless of type. The value is taken from
         // System.currentTimeMillis(), which you can compare to in order to determine how
         // old the event is.
@@ -30,8 +38,8 @@ public open class MyBroadcastReceiver : BroadcastReceiver() {
 
             // Do something with extracted information...
 
-            Log.d("BroadcastRec","track id $trackId")
-            Log.d("BroadcastRec","artistName $artistName")
+            Log.d("PlayerBroadcastReceiver","track id $trackId")
+            Log.d("PlayerBroadcastReceiver","artistName $artistName")
 
         } else if (action == BroadcastTypes.PLAYBACK_STATE_CHANGED) {
             val playing = intent.getBooleanExtra("playing", false)
