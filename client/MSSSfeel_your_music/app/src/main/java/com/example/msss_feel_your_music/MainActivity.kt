@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 
 
+// Main activity of the application
 class MainActivity : ComponentActivity() {
 
     private var receiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -69,6 +70,7 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    // When the activity is no more visible
     override fun onStop() {
         super.onStop()
 //        unbindService(connection)
