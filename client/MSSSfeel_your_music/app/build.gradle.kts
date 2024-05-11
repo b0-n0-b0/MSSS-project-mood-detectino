@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("kotlin-kapt")
 }
 
 android {
@@ -52,6 +53,8 @@ android {
 }
 
 dependencies {
+    val roomVersion = "2.6.1"
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -75,4 +78,32 @@ dependencies {
     implementation(project(":app:libs:lib_remote"))
     implementation(project(":app:libs:lib_auth"))
     implementation("com.google.code.gson:gson:2.6.1")
+
+
+    implementation("androidx.room:room-runtime:$roomVersion")
+    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$roomVersion")
+    // To use Kotlin Symbol Processing (KSP)
+    // ksp("androidx.room:room-compiler:$roomVersion")
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$roomVersion")
+
+    // optional - RxJava2 support for Room
+    implementation("androidx.room:room-rxjava2:$roomVersion")
+
+    // optional - RxJava3 support for Room
+    implementation("androidx.room:room-rxjava3:$roomVersion")
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    implementation("androidx.room:room-guava:$roomVersion")
+
+    // optional - Test helpers
+    testImplementation("androidx.room:room-testing:$roomVersion")
+
+    // optional - Paging 3 Integration
+    implementation("androidx.room:room-paging:$roomVersion")
+
 }
