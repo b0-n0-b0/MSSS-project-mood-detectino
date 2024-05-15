@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
@@ -46,10 +47,24 @@ class MainActivity : ComponentActivity() {
             mBound = true
             spotifyService.connectToSpotify()
         }
+
         override fun onServiceDisconnected(arg0: ComponentName) {
             mBound = false
         }
+
     }
+        private var messageService: MessageService? = null
+
+        private val Wearconnection = object : ServiceConnection {
+            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+                val binder = service as MessageService.LocalBinder
+                messageService = binder.getService()
+            }
+
+            override fun onServiceDisconnected(className: ComponentName) {
+                messageService = null
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +84,20 @@ class MainActivity : ComponentActivity() {
 //      DEBUG db
 //      (application as? FeelYourMusicApplication)?.logDatabaseContents()
         setContentView(R.layout.main_activity)
+        val startButton = findViewById<Button>(R.id.startButton)
+        val stopButton = findViewById<Button>(R.id.stopButton)
+        startButton.setOnClickListener {
+            if (messageService == null) {
+                val serviceIntent = MessageService.createIntent(this@MainActivity)
+                bindService(serviceIntent, Wearconnection, Context.BIND_AUTO_CREATE)
+            }
+        }
+        stopButton.setOnClickListener {
+            if (messageService != null) {
+                messageService?.sendMessage("/stop", "stop")
+                unbindService(Wearconnection)
+            }
+        }
     }
 
     //TODO(capire se devo chiamare unbind e simili sulla onStop o sulla onDestroy etc)
@@ -87,5 +116,12 @@ class MainActivity : ComponentActivity() {
 //        unregisterReceiver(receiver)
         mBound = false
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(Wearconnection)
+        unregisterReceiver(internalReceiver)
+    }
+
 
 }

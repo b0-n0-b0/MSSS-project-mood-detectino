@@ -23,3 +23,4 @@ rootProject.name = "MSSS-feel_your_music"
 include(":app")
 include(":app:libs:lib_remote")
 include(":app:libs:lib_auth")
+include(":wear")

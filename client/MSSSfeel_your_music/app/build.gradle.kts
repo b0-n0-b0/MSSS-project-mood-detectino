@@ -48,11 +48,13 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "model.tflite"
         }
     }
 }
 
 dependencies {
+    implementation(libs.play.services.wearable)
     val roomVersion = "2.6.1"
 
 
@@ -69,6 +71,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
+    implementation ("org.tensorflow:tensorflow-lite:2.8.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
