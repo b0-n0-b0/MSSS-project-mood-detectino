@@ -25,7 +25,7 @@ class FeelYourMusicApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        logDatabaseContents()
+        // logDatabaseContents()
     }
 
     // DEBUG to show the track stored in the database
