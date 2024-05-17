@@ -1,5 +1,6 @@
 package com.example.msss_feel_your_music
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -9,9 +10,21 @@ import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
+import com.google.gson.Gson
+import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
+import com.spotify.sdk.android.auth.AuthorizationResponse
+import com.spotify.sdk.android.auth.LoginActivity.REQUEST_CODE
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okio.IOException
 
 
 // Main activity of the application
@@ -51,6 +64,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //internalReceiver setup
@@ -69,6 +83,43 @@ class MainActivity : ComponentActivity() {
 //      DEBUG db
 //      (application as? FeelYourMusicApplication)?.logDatabaseContents()
         setContentView(R.layout.main_activity)
+
+        // TODO Prova access token for Spotify Web API
+        val clientId = getString(R.string.CLIENT_ID)
+        val requestCode = R.integer.request_code
+        val redirectUri = getString(R.string.REDIRECT_URI)
+
+        val builder =
+            AuthorizationRequest.Builder(clientId, AuthorizationResponse.Type.TOKEN, redirectUri)
+
+        builder.setScopes(arrayOf("streaming"))
+        val request = builder.build()
+
+        AuthorizationClient.openLoginActivity(this, requestCode, request)
+    }
+
+    // Method called when Spotify login activity returns
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+
+        // Check if result comes from the correct activity
+        if (requestCode == R.integer.request_code) {
+            val response = AuthorizationClient.getResponse(resultCode, intent)
+
+            when (response.type) {
+                AuthorizationResponse.Type.TOKEN -> {
+
+                    // TODO DEBUG Access token and tracks recommendation
+                    Log.d("Access Token", response.accessToken)
+                    fetchRecommendations(response.accessToken, "4NHQUGzhtTLFvgF5SZesLK",
+                        "classical", "0c6xIDDpzE81m2q797ordA")
+                }
+                AuthorizationResponse.Type.ERROR -> {
+                    // Handle errors
+                }
+                else -> {}
+            }
+        }
     }
 
     //TODO(capire se devo chiamare unbind e simili sulla onStop o sulla onDestroy etc)
@@ -86,6 +137,52 @@ class MainActivity : ComponentActivity() {
 //        unbindService(connection)
 //        unregisterReceiver(receiver)
         mBound = false
+    }
+
+    // Get Request to the recommendation endpoint of Spotify Web API
+    private fun fetchRecommendations(accessToken: String, seedArtists: String, seedGenres: String, seedTracks: String) {
+        val url = "https://api.spotify.com/v1/recommendations" +
+                "?seed_artists=$seedArtists" +
+                "&seed_genres=$seedGenres" +
+                "&seed_tracks=$seedTracks"
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $accessToken")
+            .build()
+
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        println("Failed to get recommendations")
+                        return
+                    }
+
+                    val responseBody = response.body?.string()
+                    val gson = Gson()
+                    if (responseBody != null) {
+                        Log.d("ResponseBody", responseBody)
+                    }
+
+                    // TODO extract tracks uri and other info from json
+
+                    // val recommendations = gson.fromJson(responseBody, RecommendationsResponse::class.java)
+
+                    /*
+                    recommendations.tracks.forEach { track ->
+                        println("Track: ${track.name} by ${track.artists.joinToString(", ") { it.name }}")
+                    }
+
+                     */
+                }
+            }
+        })
     }
 
 }
