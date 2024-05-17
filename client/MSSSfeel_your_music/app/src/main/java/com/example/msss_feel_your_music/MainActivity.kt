@@ -185,4 +185,21 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+    // TODO Utility function emotion_label -> bounds (valence and energy)
+    data class Boundaries(val vLow: Double, val vHigh: Double, val eLow: Double, val eHigh: Double)
+        private fun getRangeFromLabel(label: Int): Boundaries{
+        // Emotion labels: Neutral  Calm    Tired   Tension Excited
+        //                 0        1       2       3       4
+        //      Valence    0.4-0.6  0.7-1   0-0.3   0-0.3   0.7-1
+        //      Energy     0.4-0.6  0-0.3   0-0.3   0.7-1   0.7-1
+        return when (label) {
+            0 -> Boundaries(vLow = 0.4, vHigh = 0.6, eLow = 0.4, eHigh = 0.6)
+            1 -> Boundaries(vLow = 0.7, vHigh = 1.0, eLow = 0.0, eHigh = 0.3)
+            2 -> Boundaries(vLow = 0.0, vHigh = 0.3, eLow = 0.0, eHigh = 0.3)
+            3 -> Boundaries(vLow = 0.0, vHigh = 0.3, eLow = 0.7, eHigh = 1.0)
+            4 -> Boundaries(vLow = 0.7, vHigh = 1.0, eLow = 0.7, eHigh = 1.0)
+            else -> throw IllegalArgumentException("Input must be between 0 and 4")
+        }
+    }
+
 }
