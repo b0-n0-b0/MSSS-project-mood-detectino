@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
+import com.example.msss_feel_your_music.utils.Recommendation
 import com.google.gson.Gson
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
@@ -86,6 +87,7 @@ class MainActivity : ComponentActivity() {
 
         // TODO Prova access token for Spotify Web API
         val clientId = getString(R.string.CLIENT_ID)
+        val clientSecret = R.string.CLIENT_SECRET
         val requestCode = R.integer.request_code
         val redirectUri = getString(R.string.REDIRECT_URI)
 
@@ -96,6 +98,7 @@ class MainActivity : ComponentActivity() {
         val request = builder.build()
 
         AuthorizationClient.openLoginActivity(this, requestCode, request)
+
     }
 
     // Method called when Spotify login activity returns
@@ -142,7 +145,8 @@ class MainActivity : ComponentActivity() {
     // Get Request to the recommendation endpoint of Spotify Web API
     private fun fetchRecommendations(accessToken: String, seedArtists: String, seedGenres: String, seedTracks: String) {
         val url = "https://api.spotify.com/v1/recommendations" +
-                "?seed_artists=$seedArtists" +
+                "?limit=3" +
+                "&seed_artists=$seedArtists" +
                 "&seed_genres=$seedGenres" +
                 "&seed_tracks=$seedTracks"
 
@@ -161,6 +165,9 @@ class MainActivity : ComponentActivity() {
                 response.use {
                     if (!response.isSuccessful) {
                         println("Failed to get recommendations")
+                        println("Response Code: ${response.code}")
+                        val errorBody = response.body?.string()
+                        println("Response Body: $errorBody")
                         return
                     }
 
@@ -172,14 +179,15 @@ class MainActivity : ComponentActivity() {
 
                     // TODO extract tracks uri and other info from json
 
-                    // val recommendations = gson.fromJson(responseBody, RecommendationsResponse::class.java)
+                    // Extract id, name and uri of each recommended track
+                    val recommendations = gson.fromJson(responseBody, Recommendation::class.java)
 
-                    /*
                     recommendations.tracks.forEach { track ->
-                        println("Track: ${track.name} by ${track.artists.joinToString(", ") { it.name }}")
+                        println("Track id: ${track.id} ")
+                        println("Track name: ${track.name} ")
+                        println("Track uri: ${track.uri} ")
                     }
 
-                     */
                 }
             }
         })
