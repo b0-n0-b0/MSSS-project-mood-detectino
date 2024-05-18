@@ -112,10 +112,14 @@ class MainActivity : ComponentActivity() {
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
 
+                    // TODO DEBUG Boundaries for fetchRecommendation
+                    val boundaries: Boundaries = getRangeFromLabel(4)
+                    println(boundaries)
+
                     // TODO DEBUG Access token and tracks recommendation
                     Log.d("Access Token", response.accessToken)
                     fetchRecommendations(response.accessToken, "4NHQUGzhtTLFvgF5SZesLK",
-                        "classical", "0c6xIDDpzE81m2q797ordA")
+                        "pop%2Crock", "0c6xIDDpzE81m2q797ordA", boundaries)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle errors
@@ -143,12 +147,16 @@ class MainActivity : ComponentActivity() {
     }
 
     // Get Request to the recommendation endpoint of Spotify Web API
-    private fun fetchRecommendations(accessToken: String, seedArtists: String, seedGenres: String, seedTracks: String) {
+    private fun fetchRecommendations(accessToken: String, seedArtists: String, seedGenres: String, seedTracks: String, boundaries: Boundaries) {
         val url = "https://api.spotify.com/v1/recommendations" +
                 "?limit=3" +
-                "&seed_artists=$seedArtists" +
+                //"&seed_artists=$seedArtists" +
                 "&seed_genres=$seedGenres" +
-                "&seed_tracks=$seedTracks"
+                //"&seed_tracks=$seedTracks" +
+                "&min_energy=${boundaries.eLow}" +
+                "&max_energy=${boundaries.eHigh}" +
+                "&min_valence=${boundaries.vLow}" +
+                "&max_valence=${boundaries.vHigh}"
 
         val request = Request.Builder()
             .url(url)
@@ -177,8 +185,6 @@ class MainActivity : ComponentActivity() {
                         Log.d("ResponseBody", responseBody)
                     }
 
-                    // TODO extract tracks uri and other info from json
-
                     // Extract id, name and uri of each recommended track
                     val recommendations = gson.fromJson(responseBody, Recommendation::class.java)
 
@@ -188,24 +194,33 @@ class MainActivity : ComponentActivity() {
                         println("Track uri: ${track.uri} ")
                     }
 
+                    // TODO Utilizzare gli uri per inserire le track in coda
+
                 }
             }
         })
     }
 
-    // TODO Utility function emotion_label -> bounds (valence and energy)
+    // Utility function emotion_label -> bounds (valence and energy)
     data class Boundaries(val vLow: Double, val vHigh: Double, val eLow: Double, val eHigh: Double)
-        private fun getRangeFromLabel(label: Int): Boundaries{
-        // Emotion labels: Neutral  Calm    Tired   Tension Excited
-        //                 0        1       2       3       4
-        //      Valence    0.4-0.6  0.7-1   0-0.3   0-0.3   0.7-1
-        //      Energy     0.4-0.6  0-0.3   0-0.3   0.7-1   0.7-1
+    private fun getRangeFromLabel(label: Int): Boundaries{
+    // Emotion labels: Neutral  Calm    Tired   Tension Excited
+    //                 0        1       2       3       4
+    //      Valence    0.4-0.6  0.6-1   0-0.4   0-0.4   0.6-1
+    //      Energy     0.4-0.6  0-0.4   0-0.4   0.6-1   0.6-1
+        val lowerBoundLeft = getString(R.string.lower_bound_left).toDouble()
+        val lowerBoundRight = getString(R.string.lower_bound_right).toDouble()
+        val middleBoundLeft = getString(R.string.middle_bound_left).toDouble()
+        val middleBoundRight = getString(R.string.middle_bound_right).toDouble()
+        val highBoundLeft = getString(R.string.high_bound_left).toDouble()
+        val highBoundRight = getString(R.string.high_bound_right).toDouble()
+
         return when (label) {
-            0 -> Boundaries(vLow = 0.4, vHigh = 0.6, eLow = 0.4, eHigh = 0.6)
-            1 -> Boundaries(vLow = 0.7, vHigh = 1.0, eLow = 0.0, eHigh = 0.3)
-            2 -> Boundaries(vLow = 0.0, vHigh = 0.3, eLow = 0.0, eHigh = 0.3)
-            3 -> Boundaries(vLow = 0.0, vHigh = 0.3, eLow = 0.7, eHigh = 1.0)
-            4 -> Boundaries(vLow = 0.7, vHigh = 1.0, eLow = 0.7, eHigh = 1.0)
+            0 -> Boundaries(vLow = middleBoundLeft, vHigh = middleBoundRight, eLow = middleBoundLeft, eHigh = middleBoundRight)
+            1 -> Boundaries(vLow = highBoundLeft, vHigh = highBoundRight, eLow = lowerBoundLeft, eHigh = lowerBoundRight)
+            2 -> Boundaries(vLow = lowerBoundLeft, vHigh = lowerBoundRight, eLow = lowerBoundLeft, eHigh = lowerBoundRight)
+            3 -> Boundaries(vLow = lowerBoundLeft, vHigh = lowerBoundRight, eLow = highBoundLeft, eHigh = highBoundRight)
+            4 -> Boundaries(vLow = highBoundLeft, vHigh = highBoundRight, eLow = highBoundLeft, eHigh = highBoundRight)
             else -> throw IllegalArgumentException("Input must be between 0 and 4")
         }
     }
