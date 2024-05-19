@@ -38,17 +38,18 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 
 class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListener{
+
     private lateinit var messageClient: MessageClient
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        setTheme(android.R.style.Theme_DeviceDefault)
-        setContent {
+       setTheme(android.R.style.Theme_DeviceDefault)
+       setContent {
             WearApp("Android")
         }
-        messageClient = Wearable.getMessageClient(this)
+       messageClient = Wearable.getMessageClient(this)
         messageClient.addListener(this)
     }
 
@@ -84,14 +85,14 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         }
     }
     private fun startSensorDataService() {
+
         val intent = Intent(this, SensorDataService::class.java)
         intent.action = SensorDataService.ACTION_START
         startService(intent)
     }
     private fun stopSensorDataService() {
         val intent = Intent(this, SensorDataService::class.java)
-        intent.action = SensorDataService.ACTION_STOP
-        startService(intent)
+        stopService(intent)
     }
 
 

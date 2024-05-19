@@ -18,15 +18,12 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
 
     private lateinit var mMessageClient: MessageClient
     private lateinit var modelClassifier: ModelClassifier
-    private val binder = LocalBinder()
+
 
     override fun onBind(intent: Intent?): IBinder? {
-        return binder
+        return null
     }
 
-    inner class LocalBinder : Binder() {
-        fun getService(): MessageService = this@MessageService
-    }
 
     companion object {
         fun createIntent(context: Context): Intent {
@@ -38,7 +35,6 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
         mMessageClient = Wearable.getMessageClient(this)
         mMessageClient.addListener(this)
         modelClassifier = ModelClassifier(applicationContext)
-        sendMessage("/start","start")
 
     }
 
@@ -58,21 +54,5 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
         Log.d(ContentValues.TAG, "Predicted label: $label")
     }
 
-    fun sendMessage(messagePath: String, data: String) {
-        val nodeIdsTask: Task<List<Node>> = Wearable.getNodeClient(this).connectedNodes
-        val byteArray = data.toByteArray(Charsets.UTF_8)
-        nodeIdsTask.addOnSuccessListener { nodes ->
-            for (node in nodes) {
-                Log.d(ContentValues.TAG, "nodo: $node.id")
-                val sendMessageTask = Wearable.getMessageClient(this).sendMessage(node.id, messagePath, byteArray)
-                sendMessageTask.addOnSuccessListener {
-                    Log.d(ContentValues.TAG, "Message sent successfully")
-                }.addOnFailureListener { exception ->
-                    Log.e(ContentValues.TAG, "Failed to send message", exception)
-                }
-            }
-        }.addOnFailureListener { exception ->
-            Log.e(ContentValues.TAG, "Failed to get node IDs", exception)
-        }
-    }
+
 }

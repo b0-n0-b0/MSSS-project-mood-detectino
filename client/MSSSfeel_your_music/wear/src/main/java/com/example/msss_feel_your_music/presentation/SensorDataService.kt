@@ -46,7 +46,7 @@ class SensorDataService :  Service(), SensorEventListener {
         }
         edaSensor = sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY)  //EDA TO MODIFY LATER
        */
-        sensorSimulator = SensorSimulator()
+         sensorSimulator = SensorSimulator()
         sensorSimulator.addHeartRateListener { hr ->
             hrValues.add(hr)
         }
@@ -72,14 +72,6 @@ class SensorDataService :  Service(), SensorEventListener {
                 //   startSensorReadings()
                 scheduleSendData()
             }
-
-            ACTION_STOP -> {
-                Log.d(TAG, "Received stop command")
-                // stopSensorReadings()
-                cancelSendData()
-                stopSelf()
-            }
-
             else -> Log.e(TAG, "Unknown action: $action")
         }
     }
@@ -122,7 +114,11 @@ class SensorDataService :  Service(), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        // stopSensorReadings()
+        sensorSimulator.stopSimulation()
+        handlerThread.quitSafely()
+        cancelSendData()
+        //stopSensorReading
+        Log.d(TAG, "SensorDataService destroyed")
     }
 
     override fun onBind(intent: Intent): IBinder? {
