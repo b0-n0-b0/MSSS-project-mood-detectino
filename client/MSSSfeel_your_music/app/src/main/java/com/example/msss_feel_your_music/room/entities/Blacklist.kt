@@ -5,9 +5,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 // Entity that represents the table int the database
-// A tuple contains id and valence of a track
+// A tuple contains id, skipCount and timestamp of a track
 @Entity
-data class TrackInfo(
+data class Blacklist(
     @PrimaryKey val tid: String,
-    @ColumnInfo(name = "valence") val valence: Double
+    @ColumnInfo(name = "skipCount") val skipCount: Int,
+    @ColumnInfo(name = "timestamp") val timestamp: Long
 )
