@@ -1,16 +1,12 @@
 package com.example.msss_feel_your_music
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.widget.Button
 import androidx.activity.ComponentActivity
@@ -19,9 +15,6 @@ import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastRe
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
-import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat
-import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
 import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.example.msss_feel_your_music.utils.Recommendation
 import com.google.gson.Gson
@@ -41,10 +34,14 @@ import okio.IOException
 class MainActivity : ComponentActivity() {
     private var spotifyReceiver = PlayerBroadcastReceiver()
 
+    private var currentLabel = 0
     private var internalReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if(intent.action == getString(R.string.intent_spotify_connection_error)){
                 //TODO
+            }else if (intent.action == getString(R.string.intent_wearabledata_received)){
+                currentLabel = intent.getIntExtra("label",0)
+                webApiLogin()
             }
         }
     }
@@ -89,10 +86,11 @@ class MainActivity : ComponentActivity() {
             sendMessage("/stop","stop")
             val serviceIntent = MessageService.createIntent(this@MainActivity)
             stopService(serviceIntent)
+        }
+    }
 
-        // TODO Prova access token for Spotify Web API
+    private fun webApiLogin(){
         val clientId = getString(R.string.CLIENT_ID)
-        val clientSecret = R.string.CLIENT_SECRET
         val requestCode = R.integer.request_code
         val redirectUri = getString(R.string.REDIRECT_URI)
 
@@ -103,7 +101,6 @@ class MainActivity : ComponentActivity() {
         val request = builder.build()
 
         AuthorizationClient.openLoginActivity(this, requestCode, request)
-
     }
 
     // Method called when Spotify login activity returns
@@ -116,15 +113,12 @@ class MainActivity : ComponentActivity() {
 
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
-
-                    // TODO DEBUG Boundaries for fetchRecommendation
-                    val boundaries: Boundaries = getRangeFromLabel(4)
+                    val boundaries: Boundaries = getRangeFromLabel(currentLabel)
                     println(boundaries)
 
-                    // TODO DEBUG Access token and tracks recommendation
                     Log.d("Access Token", response.accessToken)
-                    fetchRecommendations(response.accessToken, "4NHQUGzhtTLFvgF5SZesLK",
-                        "pop%2Crock", "0c6xIDDpzE81m2q797ordA", boundaries)
+                    fetchRecommendations(response.accessToken,
+                        "pop%2Crock", boundaries)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle errors
@@ -152,7 +146,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // Get Request to the recommendation endpoint of Spotify Web API
-    private fun fetchRecommendations(accessToken: String, seedArtists: String, seedGenres: String, seedTracks: String, boundaries: Boundaries) {
+    private fun fetchRecommendations(accessToken: String, seedGenres: String, boundaries: Boundaries) {
         val url = "https://api.spotify.com/v1/recommendations" +
                 "?limit=3" +
                 //"&seed_artists=$seedArtists" +
@@ -192,15 +186,14 @@ class MainActivity : ComponentActivity() {
 
                     // Extract id, name and uri of each recommended track
                     val recommendations = gson.fromJson(responseBody, Recommendation::class.java)
-
+                    val recs : ArrayList<String> = ArrayList<String>()
                     recommendations.tracks.forEach { track ->
-                        println("Track id: ${track.id} ")
-                        println("Track name: ${track.name} ")
-                        println("Track uri: ${track.uri} ")
+                        recs.add(track.uri)
                     }
-
-                    // TODO Utilizzare gli uri per inserire le track in coda
-
+                    val intent = Intent(this@MainActivity, SpotifyService::class.java)
+                    intent.putExtra("recommendations", recs)
+                    intent.putExtra("label", currentLabel)
+                    startService(intent)
                 }
             }
         })
@@ -253,6 +246,5 @@ class MainActivity : ComponentActivity() {
             Log.e(ContentValues.TAG, "Failed to get node IDs", exception)
         }
     }
-
 
 }

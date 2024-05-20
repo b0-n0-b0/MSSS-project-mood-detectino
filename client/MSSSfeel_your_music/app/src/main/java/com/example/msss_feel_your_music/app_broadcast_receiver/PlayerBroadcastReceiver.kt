@@ -20,7 +20,7 @@ public open class PlayerBroadcastReceiver : BroadcastReceiver() {
         // This intent is sent whenever the user presses play/pause, or when seeking the track position
         const val PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged"
     }
-
+    //TODO:handle spotify callbacks for blacklist
     // When an intent is received
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("PlayerBroadcastReceiver","Intent: $intent")

@@ -1,14 +1,13 @@
 <resources>
     <string name="app_name">MSSS-feel your music</string>
     <string name="CLIENT_ID">8894bad3cdd249af82cd9f58daa143a8</string>
-    <string name="CLIENT_SECRET">6686daca7ea74a6999a6f582eef7b6b6</string>
     <string name="REDIRECT_URI">http://localhost:8080</string>
     <string name="shared_pref_key">Spotify</string>
     <string name="intent_metadata_changed">com.spotify.music.metadatachanged</string>
     <string name="intent_queue_changed">com.spotify.music.queuechanged</string>
     <string name="intent_playback_state_changed">com.spotify.music.playbackstatechanged</string>
     <string name="intent_spotify_connection_error">com.example.msss_feel_your_music.spotifyConnectionError</string>
-    <string name="intent_spotify_connected">com.example.msss_feel_your_music.spotifyConnectionAction</string>
+    <string name="intent_wearabledata_received">com.example.msss_feel_your_music.wearabledatareceived</string>
     <string name="request_code">1337</string>
     <string name="neutral_genres">pop%2Cchill%2Cindie</string>
     <string name="calm_genres">chill%2Cblues%2Cbossanova</string>

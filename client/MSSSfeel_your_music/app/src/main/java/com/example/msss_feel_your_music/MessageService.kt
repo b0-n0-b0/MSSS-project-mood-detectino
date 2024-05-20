@@ -52,7 +52,9 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
         val label = modelClassifier.classify(features)
         // Print the predicted label
         Log.d(ContentValues.TAG, "Predicted label: $label")
+
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("label", label)
+        sendBroadcast(intent)
     }
-
-
 }
