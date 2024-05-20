@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.example.msss_feel_your_music.room.database.AppDatabase
-import com.example.msss_feel_your_music.room.entities.TrackInfo
 import com.example.msss_feel_your_music.room.repository.AppRepository
+import com.example.msss_feel_your_music.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -19,21 +19,28 @@ class FeelYourMusicApplication : Application() {
     // Using by lazy so the database and the repository are only created when they're needed
     // rather than when the application starts
     val database by lazy { AppDatabase.getDatabase(this, applicationScope) }
-    val repository by lazy { AppRepository(database.trackInfoDao()) }
+    val repository by lazy { AppRepository(database.BlacklistDao()) }
 
     // When the application is created
     override fun onCreate() {
         super.onCreate()
 
-//        logDatabaseContents()
+        // logDatabaseContents()
     }
 
     // DEBUG to show the track stored in the database
     fun logDatabaseContents(){
         GlobalScope.launch(Dispatchers.IO){
 
-            val tracks = repository.allTracks
-            Log.d("FYMApp", "Tracks in db: $tracks")
+            val blacklistItems = repository.allTracksInBlacklist
+
+            for (blacklist in blacklistItems) {
+                val convertedTimestamp = convertLongToTime(blacklist.timestamp)
+                Log.d("FYMApp", "tid: ${blacklist.tid}")
+                Log.d("FYMApp", "skipCount: ${blacklist.skipCount}")
+                Log.d("FYMApp", "timestamp: $convertedTimestamp")
+            }
+            Log.d("FYMApp", "Tracks in db: $blacklistItems.")
         }
     }
 }
