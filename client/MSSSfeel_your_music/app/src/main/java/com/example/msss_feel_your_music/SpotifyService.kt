@@ -23,7 +23,6 @@ class SpotifyService : Service() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
     private var oldLabel: Int? = -1
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Toast.makeText(this, ""+intent?.action, Toast.LENGTH_SHORT).show()
         connectToSpotify(intent)
         return START_STICKY
     }

@@ -33,8 +33,10 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import com.example.msss_feel_your_music.R
 import com.example.msss_feel_your_music.presentation.theme.MSSSfeel_your_musicTheme
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
 
 class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListener{
@@ -45,12 +47,30 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-       setTheme(android.R.style.Theme_DeviceDefault)
-       setContent {
-            WearApp("Android")
-        }
-       messageClient = Wearable.getMessageClient(this)
+        setTheme(android.R.style.Theme_DeviceDefault)
+        setContent {
+               WearApp("Android")
+           }
+        messageClient = Wearable.getMessageClient(this)
         messageClient.addListener(this)
+
+        val nodeIdsTask: Task<List<Node>> = Wearable.getNodeClient(this).connectedNodes
+        val byteArray = "asd".toByteArray(Charsets.UTF_8)
+        nodeIdsTask.addOnSuccessListener { nodes ->
+            for (node in nodes) {
+                Log.d(ContentValues.TAG, "nodo: $node.id")
+                val sendMessageTask =
+                    Wearable.getMessageClient(this).sendMessage(node.id, "/data", byteArray)
+                sendMessageTask.addOnSuccessListener {
+                    Log.d(ContentValues.TAG, "Message sent successfully")
+
+                }.addOnFailureListener { exception ->
+                    Log.e(ContentValues.TAG, "Failed to send message", exception)
+                }
+            }
+        }.addOnFailureListener { exception ->
+            Log.e(ContentValues.TAG, "Failed to get node IDs", exception)
+        }
     }
 
 

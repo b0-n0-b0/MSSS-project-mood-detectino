@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //internalReceiver setup
         val isInstalled = SpotifyAppRemote.isSpotifyInstalled(this)
         if(!isInstalled){
             val builder = AlertDialog.Builder(this@MainActivity)
@@ -60,9 +59,10 @@ class MainActivity : ComponentActivity() {
             val alert = builder.create()
             alert.show()
         }
-        //TODO
+        //internalReceiver setup
         val filter = IntentFilter()
         filter.addAction(getString(R.string.intent_spotify_connection_error))
+        filter.addAction(getString(R.string.intent_wearabledata_received))
         ContextCompat.registerReceiver(this, internalReceiver,
             filter,
             ContextCompat.RECEIVER_EXPORTED)
@@ -132,9 +132,9 @@ class MainActivity : ComponentActivity() {
     //TODO add popup to say "enable broadcast stuff in spotify"
     override fun onStart() {
         super.onStart()
-        val intent = Intent(this, SpotifyService::class.java)
-        intent.setAction("queueAdd")
-        startService(intent);
+//        val intent = Intent(this, SpotifyService::class.java)
+//        intent.setAction("queueAdd")
+//        startService(intent);
     }
 
 

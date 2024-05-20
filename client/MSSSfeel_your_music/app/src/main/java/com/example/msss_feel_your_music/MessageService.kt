@@ -45,7 +45,6 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val path = messageEvent.path
         val data = String(messageEvent.data)
-
         Log.d(ContentValues.TAG, "msg received. Percorso: $path, Dati: $data")
         val features = data.split(",").map { it.toFloat() }
         Log.d(ContentValues.TAG, "features: $features")
@@ -53,7 +52,8 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
         // Print the predicted label
         Log.d(ContentValues.TAG, "Predicted label: $label")
 
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent()
+        intent.setAction(getString(R.string.intent_wearabledata_received))
         intent.putExtra("label", label)
         sendBroadcast(intent)
     }
