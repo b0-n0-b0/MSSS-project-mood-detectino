@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -11,6 +12,13 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.widget.Button
+import androidx.activity.ComponentActivity
+import androidx.core.content.ContextCompat
+import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.Wearable
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
@@ -41,7 +49,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //internalReceiver setup
@@ -70,6 +77,18 @@ class MainActivity : ComponentActivity() {
             addAction(getString(R.string.intent_playback_state_changed))}
         registerReceiver(spotifyReceiver, spotifyFilter, RECEIVER_EXPORTED)
         setContentView(R.layout.main_activity)
+        val startButton = findViewById<Button>(R.id.startButton)
+        val stopButton = findViewById<Button>(R.id.stopButton)
+        startButton.setOnClickListener {
+            sendMessage("/start","start")
+            val serviceIntent = MessageService.createIntent(this@MainActivity)
+            startService(serviceIntent)
+        }
+
+        stopButton.setOnClickListener {
+            sendMessage("/stop","stop")
+            val serviceIntent = MessageService.createIntent(this@MainActivity)
+            stopService(serviceIntent)
 
         // TODO Prova access token for Spotify Web API
         val clientId = getString(R.string.CLIENT_ID)
@@ -210,5 +229,30 @@ class MainActivity : ComponentActivity() {
             else -> throw IllegalArgumentException("Input must be between 0 and 4")
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(internalReceiver)
+    }
+
+
+    fun sendMessage(messagePath: String, data: String) {
+        val nodeIdsTask: Task<List<Node>> = Wearable.getNodeClient(this).connectedNodes
+        val byteArray = data.toByteArray(Charsets.UTF_8)
+        nodeIdsTask.addOnSuccessListener { nodes ->
+            for (node in nodes) {
+                Log.d(ContentValues.TAG, "nodo: $node.id")
+                val sendMessageTask = Wearable.getMessageClient(this).sendMessage(node.id, messagePath, byteArray)
+                sendMessageTask.addOnSuccessListener {
+                    Log.d(ContentValues.TAG, "Message sent successfully")
+                }.addOnFailureListener { exception ->
+                    Log.e(ContentValues.TAG, "Failed to send message", exception)
+                }
+            }
+        }.addOnFailureListener { exception ->
+            Log.e(ContentValues.TAG, "Failed to get node IDs", exception)
+        }
+    }
+
 
 }
