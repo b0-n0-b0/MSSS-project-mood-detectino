@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
+import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.example.msss_feel_your_music.utils.Recommendation
 import com.google.gson.Gson
 import com.spotify.sdk.android.auth.AuthorizationClient
@@ -30,38 +31,13 @@ import okio.IOException
 
 // Main activity of the application
 class MainActivity : ComponentActivity() {
+    private var spotifyReceiver = PlayerBroadcastReceiver()
+
     private var internalReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if(intent.action == getString(R.string.intent_spotify_connected)){
-                val isConnected = intent.getBooleanExtra("result",false)
-                if(!isConnected){
-                    val builder = AlertDialog.Builder(this@MainActivity)
-                    builder.setMessage("This app needs Spotify installed on the device!")
-                        .setCancelable(false)
-                        .setPositiveButton("Got it!") { _, _ ->
-                            finish()
-                        }
-                    val alert = builder.create()
-                    alert.show()
-                }
-                spotifyService.test()
+            if(intent.action == getString(R.string.intent_spotify_connection_error)){
+                //TODO
             }
-        }
-    }
-    private var spotifyReceiver = PlayerBroadcastReceiver()
-    private lateinit var spotifyService: SpotifyService
-    private var mBound: Boolean = false
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            // We've bound to SpotifyService, cast the IBinder and get SpotifyService instance.
-            val binder = service as SpotifyService.LocalBinder
-            spotifyService = binder.getService()
-            mBound = true
-            spotifyService.connectToSpotify()
-        }
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
         }
     }
 
@@ -69,8 +45,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //internalReceiver setup
+        val isInstalled = SpotifyAppRemote.isSpotifyInstalled(this)
+        if(!isInstalled){
+            val builder = AlertDialog.Builder(this@MainActivity)
+            builder.setMessage("This app needs Spotify installed on the device!")
+                .setCancelable(false)
+                .setPositiveButton("Got it!") { _, _ ->
+                    finish()
+                }
+            val alert = builder.create()
+            alert.show()
+        }
+        //TODO
         val filter = IntentFilter()
-        filter.addAction(getString(R.string.intent_spotify_connected))
+        filter.addAction(getString(R.string.intent_spotify_connection_error))
         ContextCompat.registerReceiver(this, internalReceiver,
             filter,
             ContextCompat.RECEIVER_EXPORTED)
@@ -81,8 +69,6 @@ class MainActivity : ComponentActivity() {
             addAction(getString(R.string.intent_queue_changed))
             addAction(getString(R.string.intent_playback_state_changed))}
         registerReceiver(spotifyReceiver, spotifyFilter, RECEIVER_EXPORTED)
-//      DEBUG db
-//      (application as? FeelYourMusicApplication)?.logDatabaseContents()
         setContentView(R.layout.main_activity)
 
         // TODO Prova access token for Spotify Web API
@@ -134,7 +120,8 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         val intent = Intent(this, SpotifyService::class.java)
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        intent.setAction("queueAdd")
+        startService(intent);
     }
 
 
@@ -143,7 +130,6 @@ class MainActivity : ComponentActivity() {
         super.onStop()
 //        unbindService(connection)
 //        unregisterReceiver(receiver)
-        mBound = false
     }
 
     // Get Request to the recommendation endpoint of Spotify Web API

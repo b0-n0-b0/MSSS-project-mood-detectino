@@ -7,6 +7,7 @@
     <string name="intent_metadata_changed">com.spotify.music.metadatachanged</string>
     <string name="intent_queue_changed">com.spotify.music.queuechanged</string>
     <string name="intent_playback_state_changed">com.spotify.music.playbackstatechanged</string>
+    <string name="intent_spotify_connection_error">com.example.msss_feel_your_music.spotifyConnectionError</string>
     <string name="intent_spotify_connected">com.example.msss_feel_your_music.spotifyConnectionAction</string>
     <string name="request_code">1337</string>
     <string name="neutral_genres">pop%2Cchill%2Cindie</string>
@@ -14,8 +15,7 @@
     <string name="tired_genres">sad%2Cemo%2Csoul</string>
     <string name="tension_genres">metal%2Crock%2Cpunk</string>
     <string name="excited_genres">dance%2Crock-n-roll%2Cpower-pop</string>
-
-
+  
     <string name="lower_bound_left">0.0</string>
     <string name="lower_bound_right">0.4</string>
     <string name="middle_bound_left">0.4</string>
