@@ -6,5 +6,5 @@
     <string name="intent_metadata_changed">com.spotify.music.metadatachanged</string>
     <string name="intent_queue_changed">com.spotify.music.queuechanged</string>
     <string name="intent_playback_state_changed">com.spotify.music.playbackstatechanged</string>
-    <string name="intent_spotify_connected">com.example.msss_feel_your_music.spotifyConnectionAction</string>
+    <string name="intent_spotify_connection_error">com.example.msss_feel_your_music.spotifyConnectionError</string>
 </resources>
