@@ -20,6 +20,17 @@ public open class PlayerBroadcastReceiver : BroadcastReceiver() {
         // This intent is sent whenever the user presses play/pause, or when seeking the track position
         const val PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged"
     }
+
+    // TODO Skip check
+    // private var trackLengthInSec: Int = 0
+    private var trackStartTime: Long = 0
+    private var skipLimitMills: Long = 30*60
+
+    private fun checkIfSkipped(timeSent: Long): Boolean{
+        Log.d("PlayerBroadcastReceiver","OLD_trackStartTime $trackStartTime")
+        return timeSent < (trackStartTime + skipLimitMills)
+    }
+
     //TODO:handle spotify callbacks for blacklist
     // When an intent is received
     override fun onReceive(context: Context, intent: Intent) {
@@ -34,12 +45,19 @@ public open class PlayerBroadcastReceiver : BroadcastReceiver() {
             val artistName = intent.getStringExtra("artist")
             val albumName = intent.getStringExtra("album")
             val trackName = intent.getStringExtra("track")
-            val trackLengthInSec = intent.getIntExtra("length", 0)
+            val timeSent = intent.getLongExtra("timeSent", 0)
 
-            // Do something with extracted information...
+            val skipped = checkIfSkipped(timeSent)
+            Log.d("PlayerBroadcastReceiver","skipped $skipped")
+
+            // Update variables with new song info
+            // trackLengthInSec = intent.getIntExtra("length", 0)
+            trackStartTime = timeSent
 
             Log.d("PlayerBroadcastReceiver","track id $trackId")
             Log.d("PlayerBroadcastReceiver","artistName $artistName")
+            Log.d("PlayerBroadcastReceiver","trackStartTime $trackStartTime")
+
 
         } else if (action == BroadcastTypes.PLAYBACK_STATE_CHANGED) {
             val playing = intent.getBooleanExtra("playing", false)
