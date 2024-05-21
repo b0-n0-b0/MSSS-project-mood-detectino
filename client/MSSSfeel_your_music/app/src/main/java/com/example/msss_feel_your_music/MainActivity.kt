@@ -33,15 +33,18 @@ import okio.IOException
 // Main activity of the application
 class MainActivity : ComponentActivity() {
     private var spotifyReceiver = PlayerBroadcastReceiver()
-
     private var currentLabel = 0
+    private var accessToken = ""
     private var internalReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if(intent.action == getString(R.string.intent_spotify_connection_error)){
                 //TODO
             }else if (intent.action == getString(R.string.intent_wearabledata_received)){
                 currentLabel = intent.getIntExtra("label",0)
-                webApiLogin()
+                Log.d("MainActivity","internalReceiver")
+                val boundaries: Boundaries = getRangeFromLabel(currentLabel)
+                fetchRecommendations(accessToken,
+                    "pop%2Crock", boundaries)
             }
         }
     }
@@ -90,6 +93,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun webApiLogin(){
+        Log.d("MainActivity","webApiLogin")
         val clientId = getString(R.string.CLIENT_ID)
         val requestCode = R.integer.request_code
         val redirectUri = getString(R.string.REDIRECT_URI)
@@ -106,6 +110,7 @@ class MainActivity : ComponentActivity() {
     // Method called when Spotify login activity returns
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
+        Log.d("MainActivity","onActivityResult")
 
         // Check if result comes from the correct activity
         if (requestCode == R.integer.request_code) {
@@ -113,12 +118,8 @@ class MainActivity : ComponentActivity() {
 
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
-                    val boundaries: Boundaries = getRangeFromLabel(currentLabel)
-                    println(boundaries)
-
                     Log.d("Access Token", response.accessToken)
-                    fetchRecommendations(response.accessToken,
-                        "pop%2Crock", boundaries)
+                    accessToken = response.accessToken
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle errors
@@ -132,9 +133,7 @@ class MainActivity : ComponentActivity() {
     //TODO add popup to say "enable broadcast stuff in spotify"
     override fun onStart() {
         super.onStart()
-//        val intent = Intent(this, SpotifyService::class.java)
-//        intent.setAction("queueAdd")
-//        startService(intent);
+        webApiLogin()
     }
 
 
