@@ -47,7 +47,7 @@ class MessageService : Service(), MessageClient.OnMessageReceivedListener {
         val data = String(messageEvent.data)
         Log.d(ContentValues.TAG, "msg received. Percorso: $path, Dati: $data")
         val features = data.split(",").map { it.toFloat() }
-        Log.d(ContentValues.TAG, "features: $features")
+//        Log.d(ContentValues.TAG, "features: $features")
         val label = modelClassifier.classify(features)
         // Print the predicted label
         Log.d(ContentValues.TAG, "Predicted label: $label")

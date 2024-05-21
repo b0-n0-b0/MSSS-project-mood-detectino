@@ -72,30 +72,41 @@ class SpotifyService : Service() {
     }
 
     private fun handleRecommendations(label: Int?, recommendations: ArrayList<String>?){
+        Log.d("SpotifyService", "label $label")
+        Log.d("SpotifyService", "reccomentations: $recommendations")
         spotifyAppRemote?.let {
             it.playerApi.playerState
                 .setResultCallback { playerState ->
-                    if (!playerState.isPaused){
+                    if (!playerState.isPaused) {
                         // do stuff
+                        it.playerApi.play(recommendations?.get(0))
                         //TODO:check recommendation is not in the blacklist
-                        val database by lazy { AppDatabase.getDatabase(this, CoroutineScope(SupervisorJob())) }
+                        val database by lazy {
+                            AppDatabase.getDatabase(
+                                this,
+                                CoroutineScope(SupervisorJob())
+                            )
+                        }
                         val repository by lazy { AppRepository(database.BlacklistDao()) }
 
                         //TODO:if oldLabel != label -> empty queue
-                        if(oldLabel != label){
+                        if (oldLabel != label) {
 
                         }
+
                         //TODO:check queue length < N -> add only if true
                     }
+                    recommendations?.forEachIndexed { i, rec ->
+                        if (i<3){
+                            Log.d("SpotifyService", "inserted in queue: $rec")
+                            it.playerApi.queue(rec)
+                        }
+                    }
+
                 }
                 .setErrorCallback { throwable ->
                     //TODO: handle errors
                 };
-            // Subscribe to PlayerState
-            it.playerApi.subscribeToPlayerState().setEventCallback {
-                val track: Track = it.track
-                Log.d("MainActivity", track.name + " by " + track.artist.name)
-            }
             //save label
             oldLabel = label
         }
