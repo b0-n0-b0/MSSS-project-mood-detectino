@@ -35,10 +35,8 @@ class FeelYourMusicApplication : Application() {
             val blacklistItems = repository.allTracksInBlacklist
 
             for (blacklist in blacklistItems) {
-                val convertedTimestamp = convertLongToTime(blacklist.timestamp)
-                Log.d("FYMApp", "tid: ${blacklist.tid}")
+                Log.d("FYMApp", "tid: ${blacklist.uri}")
                 Log.d("FYMApp", "skipCount: ${blacklist.skipCount}")
-                Log.d("FYMApp", "timestamp: $convertedTimestamp")
             }
             Log.d("FYMApp", "Tracks in db: $blacklistItems.")
         }

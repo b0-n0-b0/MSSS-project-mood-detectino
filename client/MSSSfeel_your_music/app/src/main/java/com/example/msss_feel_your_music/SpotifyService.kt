@@ -77,6 +77,8 @@ class SpotifyService : Service() {
         spotifyAppRemote?.let {
             it.playerApi.playerState
                 .setResultCallback { playerState ->
+
+                    // TODO TOGLIERE IL CONTROLLO DEL PLAYER isPaused
                     if (!playerState.isPaused) {
                         // do stuff
                         it.playerApi.play(recommendations?.get(0))
@@ -88,6 +90,29 @@ class SpotifyService : Service() {
                             )
                         }
                         val repository by lazy { AppRepository(database.BlacklistDao()) }
+
+                        GlobalScope.launch(Dispatchers.IO){
+
+                            // TODO CONTROLLARE SE LA TRACK E' GIA' IN BLACKLIST
+                            //  se non è in blacklist, aggiungerla con skipCount = 1
+                            //  se è già in blacklist, aumentare lo skipCount
+
+                            // TODO DEBUG CLEAN TABLE
+                            // repository.deleteAll()
+
+                            val blacklist = repository.getTrackByUri("spotify:track:6CeCOC2zx1qS8mQNYHe6IM")
+                            Log.d("SpotifyService", "$blacklist")
+                            if (blacklist == null) {
+                                repository.insert("spotify:track:6CeCOC2zx1qS8mQNYHe6IM")
+                                Log.d("SpotifyService", "new uri in blacklist")
+                            } else {
+                                Log.d("SpotifyService", "uri: ${blacklist.uri}")
+                            }
+
+
+                        }
+
+
 
                         //TODO:if oldLabel != label -> empty queue
                         if (oldLabel != label) {

@@ -11,13 +11,26 @@ class AppRepository(private val blacklistDao: BlacklistDao) {
     // Room executes all queries on a separate thread.
     val allTracksInBlacklist: List<Blacklist> = blacklistDao.getAll()
 
+
     // By default Room runs suspend queries off the main thread, therefore, we don't need to
     // implement anything else to ensure we're not doing long running database work
     // off the main thread.
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
-    suspend fun insert(blacklist: Blacklist) {
-        blacklistDao.insert(blacklist)
+    suspend fun insert(uri: String) {
+        blacklistDao.insert(Blacklist(uri = uri, skipCount = 1))
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun getTrackByUri(uri: String): Blacklist {
+        return blacklistDao.getTrackByUri(uri)
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun deleteAll(){
+        return blacklistDao.deleteAll()
     }
 
 }
