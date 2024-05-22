@@ -9,6 +9,7 @@
     <string name="intent_spotify_connection_error">com.example.msss_feel_your_music.spotifyConnectionError</string>
     <string name="intent_wearabledata_received">com.example.msss_feel_your_music.wearabledatareceived</string>
     <string name="request_code">1337</string>
+
     <string name="neutral_genres">pop%2Cchill%2Cindie</string>
     <string name="calm_genres">chill%2Cblues%2Cbossanova</string>
     <string name="tired_genres">sad%2Cemo%2Csoul</string>
