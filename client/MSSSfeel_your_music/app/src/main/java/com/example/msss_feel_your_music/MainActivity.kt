@@ -48,8 +48,7 @@ class MainActivity : ComponentActivity() {
                 val recommendedGenres: String = getGenresFromLabel(currentLabel)
 
                 // Fetch the recommended tracks
-                fetchRecommendations(accessToken,
-                    recommendedGenres, boundaries)
+                fetchRecommendations(accessToken, recommendedGenres, boundaries)
             }
         }
     }

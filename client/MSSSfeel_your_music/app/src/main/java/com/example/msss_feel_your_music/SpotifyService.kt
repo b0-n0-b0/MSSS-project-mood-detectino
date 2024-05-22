@@ -95,8 +95,6 @@ class SpotifyService : Service() {
                     recommendations?.forEachIndexed { i, rec ->
                         if (i < recommendations.size){
 
-                            // TODO:check recommendation is not in the blacklist
-
                             // Database instance
                             val database by lazy {
                                 AppDatabase.getDatabase(
@@ -113,24 +111,16 @@ class SpotifyService : Service() {
                             // Coroutine to access database
                             GlobalScope.launch(Dispatchers.IO){
 
-                                // TODO QUANDO FACCIO SKIP -> CONTROLLARE SE LA TRACK E' GIA' IN BLACKLIST
-                                //  se non è in blacklist, aggiungerla con skipCount = 1
-                                //  se è già in blacklist, aumentare lo skipCount
-
                                 // DEBUG CLEAN TABLE
                                 // repository.deleteAll()
 
-                                // Check if the track is in blacklist
+                                // Check if the track is in the blacklist
                                 val blacklist = repository.getTrackByUri(rec)
 
                                 // If it's not OR if skipCount < 3, add to the player queue
                                 if (blacklist == null || (blacklist != null && blacklist.skipCount < 3)) {
-
                                     it.playerApi.queue(rec)
                                     Log.d("SpotifyService", "inserted in queue: $rec")
-
-//                                  repository.insert(rec)
-//                                  Log.d("SpotifyService", "new track $rec in blacklist")
                                 }
                                 // Else, do not add it to the player queue
                                 else {
