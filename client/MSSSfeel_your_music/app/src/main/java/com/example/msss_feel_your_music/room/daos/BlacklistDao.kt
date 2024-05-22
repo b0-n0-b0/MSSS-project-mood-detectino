@@ -14,9 +14,13 @@ interface BlacklistDao {
     @Query("SELECT * FROM blacklist")
     fun getAll(): List<Blacklist>
 
-    // Retrieve the tracks with the given trackIds
-    @Query("SELECT * FROM blacklist WHERE tid IN (:trackIds)")
-    fun getAllByIds(trackIds: IntArray): List<Blacklist>
+    // Retrieve the tracks with the given trackUris
+    @Query("SELECT * FROM blacklist WHERE uri IN (:trackUris)")
+    fun getAllByUris(trackUris: IntArray): List<Blacklist>
+
+    // Retrieve the track by uri
+    @Query("SELECT * FROM blacklist WHERE uri = :uri")
+    fun getTrackByUri(uri: String): Blacklist
 
     // Retrieve the tracks with the valence in a specified range
     // @Query("SELECT * FROM blacklist WHERE valence >= :minValence AND valence < :maxValence")
