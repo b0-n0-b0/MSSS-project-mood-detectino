@@ -32,7 +32,7 @@ abstract class AppDatabase : RoomDatabase(){
 
             INSTANCE?.let { database ->
                 scope.launch {
-                    populateDatabase(database.BlacklistDao())
+                    // populateDatabase(database.BlacklistDao())
                 }
             }
         }

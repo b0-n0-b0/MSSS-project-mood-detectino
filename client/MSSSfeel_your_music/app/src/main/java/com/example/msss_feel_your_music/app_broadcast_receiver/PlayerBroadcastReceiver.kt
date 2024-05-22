@@ -32,13 +32,14 @@ open class PlayerBroadcastReceiver : BroadcastReceiver() {
     // TODO Skip check
     internal object TrackStatus {
         var trackStartTime: Long = 0
-        var skipLimitMills: Long = 30*60
+        var skipLimitMills: Long = 30*1000
     }
 
     private fun trackIsSkipped(timeSent: Long): Boolean{
 
 
         Log.d("PlayerBroadcastReceiver","OLD_trackStartTime ${TrackStatus.trackStartTime}")
+        Log.d("PlayerBroadcastReceiver","timeSent ${TrackStatus.trackStartTime}")
         return timeSent < (TrackStatus.trackStartTime + TrackStatus.skipLimitMills)
     }
 
@@ -88,8 +89,10 @@ open class PlayerBroadcastReceiver : BroadcastReceiver() {
                         val blacklist = repository.getTrackByUri(trackId)
                         if(blacklist!=null){
                             repository.updateSkipCount(trackId, blacklist.skipCount + 1)
+                            Log.d("PlayerBroadcastReceiver", "Track $trackId updated: skipCount ${blacklist.skipCount+1}")
                         } else if(blacklist==null){
                             repository.insert(trackId)
+                            Log.d("PlayerBroadcastReceiver", "New Track $trackId in blacklist")
                         }
                     }
                 }
