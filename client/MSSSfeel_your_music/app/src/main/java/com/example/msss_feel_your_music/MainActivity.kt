@@ -43,6 +43,10 @@ class MainActivity : ComponentActivity() {
                 currentLabel = intent.getIntExtra("label",0)
                 Log.d("MainActivity","internalReceiver")
                 val boundaries: Boundaries = getRangeFromLabel(currentLabel)
+
+                // TODO DISCRIMINARE PLAYLIST
+
+
                 fetchRecommendations(accessToken,
                     "pop%2Crock", boundaries)
             }
@@ -147,7 +151,7 @@ class MainActivity : ComponentActivity() {
     // Get Request to the recommendation endpoint of Spotify Web API
     private fun fetchRecommendations(accessToken: String, seedGenres: String, boundaries: Boundaries) {
         val url = "https://api.spotify.com/v1/recommendations" +
-                "?limit=3" +
+                "?limit=2" +
                 //"&seed_artists=$seedArtists" +
                 "&seed_genres=$seedGenres" +
                 //"&seed_tracks=$seedTracks" +
