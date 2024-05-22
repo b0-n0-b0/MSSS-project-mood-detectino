@@ -29,8 +29,16 @@ class AppRepository(private val blacklistDao: BlacklistDao) {
 
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
+    suspend fun updateSkipCount(uri: String, updatedSkipCount: Int) {
+        blacklistDao.updateSkipCount(uri = uri, updatedSkipCount = updatedSkipCount)
+    }
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
     suspend fun deleteAll(){
         return blacklistDao.deleteAll()
     }
+
+
 
 }

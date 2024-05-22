@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.msss_feel_your_music.room.entities.Blacklist
 
 // Dao for Blacklist table
@@ -25,6 +26,9 @@ interface BlacklistDao {
     // Retrieve the tracks with the valence in a specified range
     // @Query("SELECT * FROM blacklist WHERE valence >= :minValence AND valence < :maxValence")
     // fun getTrackByValence(minValence: Double, maxValence: Double): List<Blacklist>
+
+    @Query("UPDATE blacklist SET skipCount = :updatedSkipCount WHERE uri = :uri")
+    fun updateSkipCount(uri: String, updatedSkipCount: Int)
 
     // Insert a list of given tracks
     @Insert
