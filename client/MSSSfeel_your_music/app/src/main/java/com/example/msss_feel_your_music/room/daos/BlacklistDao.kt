@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.msss_feel_your_music.room.entities.Blacklist
 
 // Dao for Blacklist table
@@ -21,6 +22,11 @@ interface BlacklistDao {
     // Retrieve the track by uri
     @Query("SELECT * FROM blacklist WHERE uri = :uri")
     fun getTrackByUri(uri: String): Blacklist
+
+
+    @Query("UPDATE blacklist SET skipCount = :updatedSkipCount WHERE uri = :uri")
+    fun updateSkipCount(uri: String, updatedSkipCount: Int)
+
 
     // Insert a list of given tracks
     @Insert

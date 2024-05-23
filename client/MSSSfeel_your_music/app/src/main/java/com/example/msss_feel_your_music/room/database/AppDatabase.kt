@@ -32,8 +32,6 @@ abstract class AppDatabase : RoomDatabase(){
 
             INSTANCE?.let { database ->
                 scope.launch {
-
-                    // DEBUG
                     // populateDatabase(database.BlacklistDao())
                 }
             }
