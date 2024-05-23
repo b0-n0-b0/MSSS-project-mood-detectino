@@ -24,15 +24,15 @@ class SensorDataService :  Service(), SensorEventListener {
     private val handlerThread = HandlerThread("SensorDataThread")
     private lateinit var sensorHandler: Handler
     private val sendDataHandler = Handler(Looper.getMainLooper())
-    private val interval = 45000L // 45
+    private val interval = 5000L // 45
     private lateinit var sensorManager: SensorManager
     private var heartRateSensor: Sensor? = null
     private var edaSensor: Sensor? = null
 
 //    private val hrValues = mutableListOf<Float>()
 //    private val edaValues = mutableListOf<Float>()
-    private val hrValues = ConcurrentLinkedQueue<Float>()
-    private val edaValues = ConcurrentLinkedQueue<Float>()
+    val hrValues = ConcurrentLinkedQueue<Float>()
+    val edaValues = ConcurrentLinkedQueue<Float>()
 
     override fun onCreate() {
         super.onCreate()
@@ -184,9 +184,9 @@ class SensorDataService :  Service(), SensorEventListener {
         }
     }
 
-    private fun sendDataToMobile() {
-        val tmpHr=hrValues
-        val tmpEda=edaValues
+    fun sendDataToMobile() {
+        val tmpHr=hrValues.toList()
+        val tmpEda=edaValues.toList()
         hrValues.clear()
         edaValues.clear()
         Log.d(TAG, "sendDataToMobile")

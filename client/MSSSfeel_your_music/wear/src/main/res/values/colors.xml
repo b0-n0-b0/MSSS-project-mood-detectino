@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_blue">#87CEEB</color>
+    <color name="background_pink">#FFC0CB</color>
+    <color name="text_black">#000000</color>
+</resources>

@@ -27,12 +27,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
@@ -130,11 +135,11 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
 
     @Composable
     fun WearApp(greetingName: String, isStartButtonVisible: Boolean,isCaptureActive: Boolean, onStartClicked: () -> Unit) {
-        MSSSfeel_your_musicTheme  {
+        MSSSfeel_your_musicTheme{
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colors.background),
+                    .background(colorResource(id = R.color.background_blue)),
                 contentAlignment = Alignment.Center
             ) {
                 TimeText()
@@ -142,7 +147,11 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
                 if (isStartButtonVisible) {
                     Button(
                         onClick = onStartClicked,
-                        modifier = Modifier.align(Alignment.BottomCenter)
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Black,
+                            contentColor = White
+                        )
                     ) {
                         Text(text = "Start")
                     }
@@ -150,7 +159,12 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
                 if (isCaptureActive) {
                     Button(
                         onClick = { stopSensorDataService() },
-                        modifier = Modifier.align(Alignment.BottomCenter)
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Black,
+                            contentColor = White
+                        )
+
                     ) {
                         Text(text = "Stop")
                     }
@@ -165,8 +179,10 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.primary,
-            text = stringResource(R.string.hello_world, greetingName)
+            color = colorResource(id = R.color.text_black),
+            text = stringResource(R.string.hello_world, greetingName),
+            fontWeight = FontWeight.Bold
+
         )
     }
 
