@@ -24,7 +24,7 @@ class SensorDataService :  Service(), SensorEventListener {
     private val handlerThread = HandlerThread("SensorDataThread")
     private lateinit var sensorHandler: Handler
     private val sendDataHandler = Handler(Looper.getMainLooper())
-    private val interval = 10000L // 45
+    private val interval = 45000L // 45
     private lateinit var sensorManager: SensorManager
     private var heartRateSensor: Sensor? = null
     private var edaSensor: Sensor? = null
@@ -71,18 +71,6 @@ class SensorDataService :  Service(), SensorEventListener {
         return START_STICKY
     }
 
-//    private fun handleIntent(intent: Intent) {
-//        val action = intent.action
-//        when (action) {
-//            ACTION_START -> {
-//                Log.d(TAG, "Received start command")
-//                   startSensorReadings()
-////                scheduleSendData()
-//            }
-//            else -> Log.e(TAG, "Unknown action: $action")
-//        }
-//    }
-
     private fun startSensorReadings() {
         Log.d(TAG, "startSensorReading")
         startSensorReading(heartRateSensor)
@@ -96,16 +84,12 @@ class SensorDataService :  Service(), SensorEventListener {
             delay = SensorManager.SENSOR_DELAY_FASTEST
         }
         sensor?.let { s ->
-            var result = false
-            do {
-                result = sensorManager.registerListener(
+           sensorManager.registerListener(
                     this,
                     s,
                     delay,
                     sensorHandler
                 )
-                Log.d("Result",result.toString())
-            }while (!result)
         }
     }
 
@@ -228,7 +212,5 @@ class SensorDataService :  Service(), SensorEventListener {
 
     companion object {
         const val TAG = "SensorDataService"
-//        const val ACTION_START = "com.example.wear.ACTION_START"
-//        const val ACTION_STOP = "com.example.wear.ACTION_STOP"
     }
 }
