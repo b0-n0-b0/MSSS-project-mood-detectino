@@ -77,17 +77,11 @@ class SpotifyService : Service() {
         spotifyAppRemote?.let {
             it.playerApi.playerState
                 .setResultCallback { playerState ->
+
+                    // TODO TOGLIERE IL CONTROLLO DEL PLAYER isPaused
                     if (!playerState.isPaused) {
                         // do stuff
-                        it.playerApi.play(recommendations?.get(0))
-                        //TODO:check recommendation is not in the blacklist
-                        val database by lazy {
-                            AppDatabase.getDatabase(
-                                this,
-                                CoroutineScope(SupervisorJob())
-                            )
-                        }
-                        val repository by lazy { AppRepository(database.BlacklistDao()) }
+                        // it.playerApi.play(recommendations?.get(0))
 
                         //TODO:if oldLabel != label -> empty queue
                         if (oldLabel != label) {
@@ -96,13 +90,45 @@ class SpotifyService : Service() {
 
                         //TODO:check queue length < N -> add only if true
                     }
+
+                    // For each recommended track
                     recommendations?.forEachIndexed { i, rec ->
-                        if (i<3){
-                            Log.d("SpotifyService", "inserted in queue: $rec")
-                            it.playerApi.queue(rec)
+                        if (i < recommendations.size){
+
+                            // Database instance
+                            val database by lazy {
+                                AppDatabase.getDatabase(
+                                    this,
+                                    CoroutineScope(SupervisorJob())
+                                )
+                            }
+
+                            // Repository instance
+                            val repository by lazy {
+                                AppRepository(database.BlacklistDao())
+                            }
+
+                            // Coroutine to access database
+                            GlobalScope.launch(Dispatchers.IO){
+
+                                // DEBUG CLEAN TABLE
+                                // repository.deleteAll()
+
+                                // Check if the track is in the blacklist
+                                val blacklist = repository.getTrackByUri(rec)
+
+                                // If it's not OR if skipCount < 3, add to the player queue
+                                if (blacklist == null || (blacklist != null && blacklist.skipCount < 3)) {
+                                    it.playerApi.queue(rec)
+                                    Log.d("SpotifyService", "inserted in queue: $rec")
+                                }
+                                // Else, do not add it to the player queue
+                                else {
+                                    Log.d("SpotifyService", "track in blacklist: ${blacklist.uri}")
+                                }
+                            }
                         }
                     }
-
                 }
                 .setErrorCallback { throwable ->
                     //TODO: handle errors

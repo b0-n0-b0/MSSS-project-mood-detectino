@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 @Database(entities = [Blacklist::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase(){
 
-    // Reference to the dao execute the queries
+    // Reference to the dao to execute the queries
     abstract fun BlacklistDao(): BlacklistDao
 
     // Callback with coroutine to create the database
@@ -32,7 +32,9 @@ abstract class AppDatabase : RoomDatabase(){
 
             INSTANCE?.let { database ->
                 scope.launch {
-                    populateDatabase(database.BlacklistDao())
+
+                    // DEBUG
+                    // populateDatabase(database.BlacklistDao())
                 }
             }
         }
@@ -44,17 +46,11 @@ abstract class AppDatabase : RoomDatabase(){
             // Delete all content here.
             blacklistDao.deleteAll()
 
-
-
-            // Get current timestamp
-            val timestamp: Long = currentTimeToLong()
-
             // Add sample tracks in blacklist.
-            blacklistDao.insert(Blacklist(tid = "11dFghVXANMlKmJXsNCbNl", skipCount = 1, timestamp = timestamp))
-            blacklistDao.insert(Blacklist(tid = "4VqPOruhp5EdPBeR92t6lQ", skipCount = 2, timestamp = timestamp))
-            blacklistDao.insert(Blacklist(tid = "7ouMYWpwJ422jRcDASZB7P", skipCount = 3, timestamp = timestamp))
+            blacklistDao.insert(Blacklist(uri = "spotify:track:6eiERZXZqMNYk7RjqR9Ucd", skipCount = 1))
+            blacklistDao.insert(Blacklist(uri = "spotify:track:641IM7ryimhi1vVfSONkJz", skipCount = 1))
+            blacklistDao.insert(Blacklist(uri = "spotify:track:6CHIc7NYBvYPLEUHQxhHKg", skipCount = 1))
 
-            // TODO: Add your own tracks!
         }
     }
 
