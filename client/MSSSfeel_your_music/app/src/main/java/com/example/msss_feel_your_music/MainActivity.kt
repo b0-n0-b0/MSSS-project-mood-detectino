@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import com.example.msss_feel_your_music.app_broadcast_receiver.PlayerBroadcastReceiver
@@ -44,6 +45,10 @@ class MainActivity : ComponentActivity() {
                 // Get boundaries and recommended genres
                 val boundaries: Boundaries = getRangeFromLabel(currentLabel)
                 val recommendedGenres: String = getGenresFromLabel(currentLabel)
+
+                // Set mood TextView
+                val moodTextView: TextView = findViewById(R.id.moodTextView)
+                setMoodTextView(moodTextView, currentLabel)
 
                 // Fetch the recommended tracks
                 fetchRecommendations(accessToken, recommendedGenres, boundaries)
@@ -244,6 +249,20 @@ class MainActivity : ComponentActivity() {
         Log.d("MainActivity","Recommended genres: $recommendedGenres")
 
         return recommendedGenres
+    }
+
+    // Utility function to update the mood TextView
+    private fun setMoodTextView(moodTextView: TextView, label: Int) {
+
+        val mood = when (label) {
+            0 -> getString(R.string.neutral)
+            1 -> getString(R.string.calm)
+            2 -> getString(R.string.tired)
+            3 -> getString(R.string.tension)
+            4 -> getString(R.string.excited)
+            else -> getString(R.string.no_mood)
+        }
+        moodTextView.text = mood
     }
 
     override fun onDestroy() {
