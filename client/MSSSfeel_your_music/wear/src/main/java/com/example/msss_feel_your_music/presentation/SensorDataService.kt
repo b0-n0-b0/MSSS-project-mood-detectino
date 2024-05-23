@@ -25,7 +25,7 @@ class SensorDataService :  Service(), SensorEventListener {
     private val handlerThread = HandlerThread("SensorDataThread")
     private lateinit var sensorHandler: Handler
     private val sendDataHandler = Handler(Looper.getMainLooper())
-    private val interval = 45000L // 45 seconds
+    private val interval = 10000L // 45 seconds
 
 
     private val hrValues = mutableListOf<Float>()
@@ -34,26 +34,30 @@ class SensorDataService :  Service(), SensorEventListener {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "On create SensorDataService")
-        /*
+
        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        for (sensor in sensorList) {
-            Log.d(TAG, "Sensor name: ${sensor.name}, type: ${sensor.type}")
-        }
+//        val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+//        for (sensor in sensorList) {
+//            Log.d(TAG, "Sensor name: ${sensor.name}, " +
+//                    "data: ${sensor.type}, ${sensor.id}")
+//        }
         heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
         if(heartRateSensor != null){
-            Log.d(TAG,"$heartRateSensor.")
+            Log.d(TAG,"heart Sensor: $heartRateSensor")
         }
-        edaSensor = sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY)  //EDA TO MODIFY LATER
-       */
-         sensorSimulator = SensorSimulator()
-        sensorSimulator.addHeartRateListener { hr ->
-            hrValues.add(hr)
+
+        edaSensor = sensorManager.getDefaultSensor(65554)
+        if(heartRateSensor != null){
+            Log.d(TAG,"EDA Sensor: $edaSensor")
         }
-        sensorSimulator.addEDaListener { eda ->
-            edaValues.add(eda)
-        }
-        sensorSimulator.startSimulation()
+//        sensorSimulator = SensorSimulator()
+//        sensorSimulator.addHeartRateListener { hr ->
+//            hrValues.add(hr)
+//        }
+//        sensorSimulator.addEDaListener { eda ->
+//            edaValues.add(eda)
+//        }
+//        sensorSimulator.startSimulation()
         handlerThread.start()
         sensorHandler = Handler(handlerThread.looper)
     }
@@ -64,44 +68,52 @@ class SensorDataService :  Service(), SensorEventListener {
         return super.onStartCommand(intent, flags, startId)
 
     }
+
     private fun handleIntent(intent: Intent) {
         val action = intent.action
         when (action) {
             ACTION_START -> {
                 Log.d(TAG, "Received start command")
-                //   startSensorReadings()
-                scheduleSendData()
+                   startSensorReadings()
+//                scheduleSendData()
             }
             else -> Log.e(TAG, "Unknown action: $action")
         }
     }
 
     private fun startSensorReadings() {
-        Log.e(TAG, "startSensorReading")
+        Log.d(TAG, "startSensorReading")
         startSensorReading(heartRateSensor)
         startSensorReading(edaSensor)
     }
 
     private fun startSensorReading(sensor: Sensor?) {
-        Log.e(TAG, "Starting reading sensor")
-
+        Log.d(TAG, "Starting reading sensor ${sensor?.type}")
+        var delay = SensorManager.SENSOR_DELAY_NORMAL
+        if (sensor?.type == 21){
+            delay = SensorManager.SENSOR_DELAY_FASTEST
+        }
         sensor?.let { s ->
-            sensorManager.registerListener(
-                this,
-                s,
-                SensorManager.SENSOR_DELAY_NORMAL,
-                sensorHandler
-            )
+            var result = false
+            do {
+                result = sensorManager.registerListener(
+                    this,
+                    s,
+                    delay,
+                    sensorHandler
+                )
+                Log.d("Result",result.toString())
+            }while (!result)
         }
     }
 
-    private fun stopSensorReadings() {
+    private fun stopSensorReading() {
         sensorManager.unregisterListener(this)
         handlerThread.quitSafely()
     }
 
     private fun scheduleSendData() {
-        Log.e(TAG, "ScheduleSendData")
+        Log.d(TAG, "ScheduleSendData")
         sendDataHandler.postDelayed({
             sendDataToMobile()
             scheduleSendData()
@@ -117,7 +129,7 @@ class SensorDataService :  Service(), SensorEventListener {
         sensorSimulator.stopSimulation()
         handlerThread.quitSafely()
         cancelSendData()
-        //stopSensorReading
+        stopSensorReading()
         Log.d(TAG, "SensorDataService destroyed")
     }
 
@@ -126,12 +138,17 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        Log.e(TAG, "onSensorChanged")
+        Log.d(TAG, "onSensorChanged")
         event?.let {
-            Log.e(TAG, "value: ${event.values[0]}")
             when (event.sensor.type) {
-                Sensor.TYPE_HEART_RATE -> hrValues.add(event.values[0])
-                Sensor.TYPE_RELATIVE_HUMIDITY -> edaValues.add(event.values[0])
+                Sensor.TYPE_HEART_RATE -> {
+//                    hrValues.add(event.values[0])
+                    Log.d("BVP", event.values[0].toString())
+                }
+                65554 ->{
+//                    edaValues.add(event.values[0])
+                    Log.d("EDA", event.values[0].toString())
+                }
                 else -> {}
             }
         }
@@ -182,21 +199,20 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     private fun sendDataToMobile() {
-        Log.e(TAG, "sendDataToMobile")
-        Log.e(TAG, "hr: $hrValues")
-        Log.e(TAG, "eda: $edaValues")
-
-        if (hrValues.isNotEmpty() && edaValues.isNotEmpty()) {
+        Log.d(TAG, "sendDataToMobile")
+        Log.d(TAG, "hr: $hrValues")
+        Log.d(TAG, "eda: $edaValues")
+        if (hrValues.isNotEmpty() || edaValues.isNotEmpty()) {
             val hrFeatures = calculateFeatures(hrValues, type = true)
             val edaFeatures = calculateFeatures(edaValues, type = false)
             val scaledInputFeatureshr = scaleData(hrFeatures)
             val scaledInputFeatureseda = scaleData(edaFeatures)
             val data =
                 "${scaledInputFeatureshr.joinToString(",")},${scaledInputFeatureseda.joinToString(",")}"
-            Log.e(TAG, "features extracted: $data")
+            Log.d(TAG, "features extracted: $data")
             sendMessage("/data", data)
-            hrValues.clear()
-            edaValues.clear()
+//            hrValues.clear()
+//            edaValues.clear()
         }
     }
 
