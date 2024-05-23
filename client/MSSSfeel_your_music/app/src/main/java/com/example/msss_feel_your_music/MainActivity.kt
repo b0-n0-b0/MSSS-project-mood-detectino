@@ -37,9 +37,7 @@ class MainActivity : ComponentActivity() {
     private var accessToken = ""
     private var internalReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if(intent.action == getString(R.string.intent_spotify_connection_error)){
-                //TODO
-            }else if (intent.action == getString(R.string.intent_wearabledata_received)){
+            if (intent.action == getString(R.string.intent_wearabledata_received)){
                 currentLabel = intent.getIntExtra("label",0)
                 Log.d("MainActivity","internalReceiver")
                 val boundaries: Boundaries = getRangeFromLabel(currentLabel)
@@ -62,6 +60,16 @@ class MainActivity : ComponentActivity() {
             val alert = builder.create()
             alert.show()
         }
+        val builder = AlertDialog.Builder(this@MainActivity)
+        builder.setMessage("This app needs Spotify  Device Broadcast Status on!")
+            .setCancelable(false)
+            .setPositiveButton("Already done") { _, _ ->
+            }
+            .setNegativeButton("Open settings"){ _, _ ->
+                startActivity(Intent(android.provider.Settings.ACTION_SETTINGS));
+            }
+        val alert = builder.create()
+        alert.show()
         //internalReceiver setup
         val filter = IntentFilter()
         filter.addAction(getString(R.string.intent_spotify_connection_error))
@@ -129,8 +137,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    //TODO(capire se devo chiamare unbind e simili sulla onStop o sulla onDestroy etc)
-    //TODO add popup to say "enable broadcast stuff in spotify"
     override fun onStart() {
         super.onStart()
         webApiLogin()
@@ -140,8 +146,6 @@ class MainActivity : ComponentActivity() {
     // When the activity is no more visible
     override fun onStop() {
         super.onStop()
-//        unbindService(connection)
-//        unregisterReceiver(receiver)
     }
 
     // Get Request to the recommendation endpoint of Spotify Web API

@@ -40,9 +40,6 @@ class SpotifyService : Service() {
             .build()
 
         SpotifyAppRemote.disconnect(spotifyAppRemote);
-//        var connected = true
-//        val intent = Intent()
-//        intent.setAction(getString(R.string.intent_spotify_connection_error))
         SpotifyAppRemote.connect(this, connectionParams, object : Connector.ConnectionListener {
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyAppRemote = appRemote
