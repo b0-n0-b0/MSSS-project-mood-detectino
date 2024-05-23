@@ -10,16 +10,17 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,30 +51,13 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         super.onCreate(savedInstanceState)
         setTheme(android.R.style.Theme_DeviceDefault)
         setContent {
-               WearApp("Android")
-           }
+            WearApp("Android")
+        }
         messageClient = Wearable.getMessageClient(this)
         messageClient.addListener(this)
 
-        val nodeIdsTask: Task<List<Node>> = Wearable.getNodeClient(this).connectedNodes
-        val byteArray = "asd".toByteArray(Charsets.UTF_8)
-        nodeIdsTask.addOnSuccessListener { nodes ->
-            for (node in nodes) {
-                Log.d(ContentValues.TAG, "nodo: $node.id")
-                val sendMessageTask =
-                    Wearable.getMessageClient(this).sendMessage(node.id, "/data", byteArray)
-                sendMessageTask.addOnSuccessListener {
-                    Log.d(ContentValues.TAG, "Message sent successfully")
 
-                }.addOnFailureListener { exception ->
-                    Log.e(ContentValues.TAG, "Failed to send message", exception)
-                }
-            }
-        }.addOnFailureListener { exception ->
-            Log.e(ContentValues.TAG, "Failed to get node IDs", exception)
-        }
     }
-
 
     override fun onMessageReceived(p0: MessageEvent) {
         val data = String(p0.data)
@@ -108,11 +92,11 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
     private fun startSensorDataService() {
 
         val intent = Intent(this, SensorDataService::class.java)
-        intent.action = SensorDataService.ACTION_START
+//        intent.action = SensorDataService.ACTION_START
         startService(intent)
     }
     private fun stopSensorDataService() {
-        val intent = Intent(this, SensorDataService::class.java)
+//        val intent = Intent(this, SensorDataService::class.java)
         stopService(intent)
     }
 
@@ -154,4 +138,3 @@ fun Greeting(greetingName: String) {
 fun DefaultPreview() {
     WearApp("Preview Android")
 }
-
