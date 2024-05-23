@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/background_image">
 
-    <Button
-        android:id="@+id/learn"
+    <!-- App Name -->
+    <TextView
+        android:id="@+id/app_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Learn my taste"
-        android:layout_marginTop="300dp"
-        android:layout_centerHorizontal="true"/>
+        android:layout_marginTop="150dp"
+        android:layout_centerHorizontal="true"
+        android:text="@string/app_name"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="46sp"
+        android:textStyle="italic|bold"
+        android:textColor="@android:color/black" />
 
-    <Button
-        android:id="@+id/suggest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Suggest me music"
-        android:layout_marginTop="400dp"
-        android:layout_centerHorizontal="true"/>
     <Button
         android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="500dp"
         android:layout_centerHorizontal="true"
-        android:text="StartCapture" />
+        android:text="@string/start_button"
+        android:theme="@style/CustomButtonStyle"/>
 
 
     <Button
@@ -33,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="600dp"
         android:layout_centerHorizontal="true"
-        android:text="StopCapture" />
+        android:text="@string/stop_button"
+        android:theme="@style/CustomButtonStyle"/>
 
 </RelativeLayout>

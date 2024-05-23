@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-// Entity that represents the table int the database
+// Entity that represents the Blacklist table in the database
 // A tuple contains uri and skipCount of a track
 @Entity
 data class Blacklist(

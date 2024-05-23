@@ -83,11 +83,6 @@ class SpotifyService : Service() {
                         // do stuff
                         // it.playerApi.play(recommendations?.get(0))
 
-
-
-
-
-
                         //TODO:if oldLabel != label -> empty queue
                         if (oldLabel != label) {
 
@@ -95,10 +90,10 @@ class SpotifyService : Service() {
 
                         //TODO:check queue length < N -> add only if true
                     }
+
+                    // For each recommended track
                     recommendations?.forEachIndexed { i, rec ->
                         if (i < recommendations.size){
-
-                            // TODO:check recommendation is not in the blacklist
 
                             // Database instance
                             val database by lazy {
@@ -116,32 +111,24 @@ class SpotifyService : Service() {
                             // Coroutine to access database
                             GlobalScope.launch(Dispatchers.IO){
 
-                                // TODO QUANDO FACCIO SKIP -> CONTROLLARE SE LA TRACK E' GIA' IN BLACKLIST
-                                //  se non è in blacklist, aggiungerla con skipCount = 1
-                                //  se è già in blacklist, aumentare lo skipCount
-
                                 // DEBUG CLEAN TABLE
                                 // repository.deleteAll()
 
-                                // TODO SE LA TRACK E' IN BLACKLIST, NON VA AGGIUNTA IN QUEUE
+                                // Check if the track is in the blacklist
+                                val blacklist = repository.getTrackByUri(rec)
 
-                                val blacklist = repository.getTrackByUri("spotify:track:6CeCOC2zx1qS8mQNYHe6IM")
-                                Log.d("SpotifyService", "$blacklist")
-                                if (blacklist == null) {
-                                    repository.insert("spotify:track:6CeCOC2zx1qS8mQNYHe6IM")
-                                    Log.d("SpotifyService", "new track in blacklist")
-                                } else {
-                                    Log.d("SpotifyService", "uri: ${blacklist.uri}")
+                                // If it's not OR if skipCount < 3, add to the player queue
+                                if (blacklist == null || (blacklist != null && blacklist.skipCount < 3)) {
+                                    it.playerApi.queue(rec)
+                                    Log.d("SpotifyService", "inserted in queue: $rec")
                                 }
-
-
+                                // Else, do not add it to the player queue
+                                else {
+                                    Log.d("SpotifyService", "track in blacklist: ${blacklist.uri}")
+                                }
                             }
-
-                            Log.d("SpotifyService", "inserted in queue: $rec")
-                            it.playerApi.queue(rec)
                         }
                     }
-
                 }
                 .setErrorCallback { throwable ->
                     //TODO: handle errors

@@ -23,12 +23,10 @@ interface BlacklistDao {
     @Query("SELECT * FROM blacklist WHERE uri = :uri")
     fun getTrackByUri(uri: String): Blacklist
 
-    // Retrieve the tracks with the valence in a specified range
-    // @Query("SELECT * FROM blacklist WHERE valence >= :minValence AND valence < :maxValence")
-    // fun getTrackByValence(minValence: Double, maxValence: Double): List<Blacklist>
 
     @Query("UPDATE blacklist SET skipCount = :updatedSkipCount WHERE uri = :uri")
     fun updateSkipCount(uri: String, updatedSkipCount: Int)
+
 
     // Insert a list of given tracks
     @Insert

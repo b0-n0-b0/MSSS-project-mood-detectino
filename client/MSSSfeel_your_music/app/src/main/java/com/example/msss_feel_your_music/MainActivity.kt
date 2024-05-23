@@ -42,13 +42,13 @@ class MainActivity : ComponentActivity() {
             }else if (intent.action == getString(R.string.intent_wearabledata_received)){
                 currentLabel = intent.getIntExtra("label",0)
                 Log.d("MainActivity","internalReceiver")
+
+                // Get boundaries and recommended genres
                 val boundaries: Boundaries = getRangeFromLabel(currentLabel)
+                val recommendedGenres: String = getGenresFromLabel(currentLabel)
 
-                // TODO DISCRIMINARE PLAYLIST
-
-
-                fetchRecommendations(accessToken,
-                    "pop%2Crock", boundaries)
+                // Fetch the recommended tracks
+                fetchRecommendations(accessToken, recommendedGenres, boundaries)
             }
         }
     }
@@ -224,6 +224,22 @@ class MainActivity : ComponentActivity() {
             4 -> Boundaries(vLow = highBoundLeft, vHigh = highBoundRight, eLow = highBoundLeft, eHigh = highBoundRight)
             else -> throw IllegalArgumentException("Input must be between 0 and 4")
         }
+    }
+
+    // Utility function to map label to genres
+    private fun getGenresFromLabel(label: Int): String {
+        // Mapping label -> genres
+        val recommendedGenres = when (label) {
+            0 -> getString(R.string.neutral_genres)
+            1 -> getString(R.string.calm_genres)
+            2 -> getString(R.string.tired_genres)
+            3 -> getString(R.string.tension_genres)
+            4 -> getString(R.string.excited_genres)
+            else -> getString(R.string.neutral_genres)
+        }
+        Log.d("MainActivity","Recommended genres: $recommendedGenres")
+
+        return recommendedGenres
     }
 
     override fun onDestroy() {

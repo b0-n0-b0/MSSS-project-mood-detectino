@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 @Database(entities = [Blacklist::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase(){
 
-    // Reference to the dao execute the queries
+    // Reference to the dao to execute the queries
     abstract fun BlacklistDao(): BlacklistDao
 
     // Callback with coroutine to create the database
@@ -46,10 +46,9 @@ abstract class AppDatabase : RoomDatabase(){
 
             // Add sample tracks in blacklist.
             blacklistDao.insert(Blacklist(uri = "spotify:track:6eiERZXZqMNYk7RjqR9Ucd", skipCount = 1))
-            blacklistDao.insert(Blacklist(uri = "spotify:track:641IM7ryimhi1vVfSONkJz", skipCount = 2))
-            blacklistDao.insert(Blacklist(uri = "spotify:track:6CHIc7NYBvYPLEUHQxhHKg", skipCount = 3))
+            blacklistDao.insert(Blacklist(uri = "spotify:track:641IM7ryimhi1vVfSONkJz", skipCount = 1))
+            blacklistDao.insert(Blacklist(uri = "spotify:track:6CHIc7NYBvYPLEUHQxhHKg", skipCount = 1))
 
-            // TODO: Add your own tracks!
         }
     }
 
