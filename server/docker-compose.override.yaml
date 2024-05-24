@@ -1,7 +1,0 @@
-services:
-
-  MSSS-project-backend:
-    environment:
-      FLASK_DEBUG: true
-    volumes:
-      - ./backend/src/:/app
