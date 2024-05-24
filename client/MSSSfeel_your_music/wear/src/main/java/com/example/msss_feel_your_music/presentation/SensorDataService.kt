@@ -15,21 +15,24 @@ import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class SensorDataService :  Service(), SensorEventListener {
 
-    private lateinit var sensorManager: SensorManager
-    private var heartRateSensor: Sensor? = null
-    private var edaSensor: Sensor? = null
-    private var sensorSimulator = SensorSimulator()
+
+    //private var sensorSimulator = SensorSimulator()
     private val handlerThread = HandlerThread("SensorDataThread")
     private lateinit var sensorHandler: Handler
     private val sendDataHandler = Handler(Looper.getMainLooper())
-    private val interval = 10000L // 45 seconds
+    private val interval = 5000L // 45
+    private lateinit var sensorManager: SensorManager
+    private var heartRateSensor: Sensor? = null
+    private var edaSensor: Sensor? = null
 
-
-    private val hrValues = mutableListOf<Float>()
-    private val edaValues = mutableListOf<Float>()
+//    private val hrValues = mutableListOf<Float>()
+//    private val edaValues = mutableListOf<Float>()
+    val hrValues = ConcurrentLinkedQueue<Float>()
+    val edaValues = ConcurrentLinkedQueue<Float>()
 
     override fun onCreate() {
         super.onCreate()
@@ -63,22 +66,9 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand: $intent")
-        intent?.let { handleIntent(it) }
-        return super.onStartCommand(intent, flags, startId)
-
-    }
-
-    private fun handleIntent(intent: Intent) {
-        val action = intent.action
-        when (action) {
-            ACTION_START -> {
-                Log.d(TAG, "Received start command")
-                   startSensorReadings()
-//                scheduleSendData()
-            }
-            else -> Log.e(TAG, "Unknown action: $action")
-        }
+        startSensorReadings()
+        scheduleSendData()
+        return START_STICKY
     }
 
     private fun startSensorReadings() {
@@ -94,16 +84,12 @@ class SensorDataService :  Service(), SensorEventListener {
             delay = SensorManager.SENSOR_DELAY_FASTEST
         }
         sensor?.let { s ->
-            var result = false
-            do {
-                result = sensorManager.registerListener(
+           sensorManager.registerListener(
                     this,
                     s,
                     delay,
                     sensorHandler
                 )
-                Log.d("Result",result.toString())
-            }while (!result)
         }
     }
 
@@ -126,7 +112,7 @@ class SensorDataService :  Service(), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        sensorSimulator.stopSimulation()
+        //sensorSimulator.stopSimulation()
         handlerThread.quitSafely()
         cancelSendData()
         stopSensorReading()
@@ -142,11 +128,11 @@ class SensorDataService :  Service(), SensorEventListener {
         event?.let {
             when (event.sensor.type) {
                 Sensor.TYPE_HEART_RATE -> {
-//                    hrValues.add(event.values[0])
+                    hrValues.add(event.values[0])
                     Log.d("BVP", event.values[0].toString())
                 }
                 65554 ->{
-//                    edaValues.add(event.values[0])
+                    edaValues.add(event.values[0])
                     Log.d("EDA", event.values[0].toString())
                 }
                 else -> {}
@@ -198,21 +184,23 @@ class SensorDataService :  Service(), SensorEventListener {
         }
     }
 
-    private fun sendDataToMobile() {
+    fun sendDataToMobile() {
+        val tmpHr=hrValues.toList()
+        val tmpEda=edaValues.toList()
+        hrValues.clear()
+        edaValues.clear()
         Log.d(TAG, "sendDataToMobile")
-        Log.d(TAG, "hr: $hrValues")
-        Log.d(TAG, "eda: $edaValues")
-        if (hrValues.isNotEmpty() || edaValues.isNotEmpty()) {
-            val hrFeatures = calculateFeatures(hrValues, type = true)
-            val edaFeatures = calculateFeatures(edaValues, type = false)
+        Log.d(TAG, "hr: $tmpHr")
+        Log.d(TAG, "eda: $tmpEda")
+        if (tmpHr.isNotEmpty() || tmpEda.isNotEmpty()) {
+            val hrFeatures = calculateFeatures(tmpHr.toList(), type = true)
+            val edaFeatures = calculateFeatures(tmpEda.toList(), type = false)
             val scaledInputFeatureshr = scaleData(hrFeatures)
             val scaledInputFeatureseda = scaleData(edaFeatures)
             val data =
                 "${scaledInputFeatureshr.joinToString(",")},${scaledInputFeatureseda.joinToString(",")}"
             Log.d(TAG, "features extracted: $data")
             sendMessage("/data", data)
-//            hrValues.clear()
-//            edaValues.clear()
         }
     }
 
@@ -223,8 +211,6 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     companion object {
-        private const val TAG = "SensorDataService"
-        const val ACTION_START = "com.example.wear.ACTION_START"
-        const val ACTION_STOP = "com.example.wear.ACTION_STOP"
+        const val TAG = "SensorDataService"
     }
 }

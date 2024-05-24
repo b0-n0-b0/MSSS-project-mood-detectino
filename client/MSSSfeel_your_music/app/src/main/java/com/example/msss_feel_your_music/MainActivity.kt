@@ -33,6 +33,7 @@ import okio.IOException
 
 // Main activity of the application
 class MainActivity : ComponentActivity() {
+
     private var spotifyReceiver = PlayerBroadcastReceiver()
     private var currentLabel = 0
     private var accessToken = ""
@@ -95,18 +96,18 @@ class MainActivity : ComponentActivity() {
         registerReceiver(spotifyReceiver, spotifyFilter, RECEIVER_EXPORTED)
         setContentView(R.layout.main_activity)
         val startButton = findViewById<Button>(R.id.startButton)
-        val stopButton = findViewById<Button>(R.id.stopButton)
+//        val stopButton = findViewById<Button>(R.id.stopButton)
         startButton.setOnClickListener {
             sendMessage("/start","start")
             val serviceIntent = MessageService.createIntent(this@MainActivity)
             startService(serviceIntent)
         }
 
-        stopButton.setOnClickListener {
-            sendMessage("/stop","stop")
-            val serviceIntent = MessageService.createIntent(this@MainActivity)
-            stopService(serviceIntent)
-        }
+//        stopButton.setOnClickListener {
+//            sendMessage("/stop","stop")
+//            val serviceIntent = MessageService.createIntent(this@MainActivity)
+//            stopService(serviceIntent)
+//        }
     }
 
     private fun webApiLogin(){
