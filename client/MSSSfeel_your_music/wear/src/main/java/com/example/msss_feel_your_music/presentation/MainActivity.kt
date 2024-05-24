@@ -10,7 +10,6 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,16 +17,22 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Cyan
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -35,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
@@ -124,7 +131,7 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         val intent = Intent(this, SensorDataService::class.java)
         stopService(intent)
         isCaptureActive=false
-        isStartButtonVisible=false
+        isStartButtonVisible=true
     }
 
 
@@ -143,14 +150,18 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
                 contentAlignment = Alignment.Center
             ) {
                 TimeText()
-                Greeting(greetingName = greetingName)
+                Greeting()
                 if (isStartButtonVisible) {
+
                     Button(
                         onClick = onStartClicked,
-                        modifier = Modifier.align(Alignment.BottomCenter),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .height(70.dp).width(50.dp)
+                            .absolutePadding(0.dp,10.dp,0.dp,10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Black,
-                            contentColor = White
+                            backgroundColor = Color(0xFFEFB8C8),
+                            contentColor = Black
                         )
                     ) {
                         Text(text = "Start")
@@ -159,10 +170,13 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
                 if (isCaptureActive) {
                     Button(
                         onClick = { stopSensorDataService() },
-                        modifier = Modifier.align(Alignment.BottomCenter),
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .height(70.dp).width(50.dp)
+                            .absolutePadding(0.dp,10.dp,0.dp,10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Black,
-                            contentColor = White
+                            backgroundColor = Color(0xFFEFB8C8),
+                            contentColor = Black
                         )
 
                     ) {
@@ -175,13 +189,14 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
     }
 
     @Composable
-    fun Greeting(greetingName: String) {
+    fun Greeting() {
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             color = colorResource(id = R.color.text_black),
-            text = stringResource(R.string.hello_world, greetingName),
-            fontWeight = FontWeight.Bold
+            text = stringResource(R.string.hello_world),
+            fontWeight = FontWeight.Bold ,
+            fontSize = 24.sp
 
         )
     }
