@@ -33,4 +33,12 @@
     <string name="start_button">Start Capture</string>
     <string name="stop_button">Stop Capture</string>
 
+    <!-- Mood Text-->
+    <string name="no_mood">You feel...</string>
+    <string name="neutral">You feel neutral</string>
+    <string name="calm">You feel calm</string>
+    <string name="tired">You feel tired</string>
+    <string name="tension">You feel tense</string>
+    <string name="excited">You feel excited</string>
+
 </resources>
