@@ -21,10 +21,13 @@ class SensorDataService :  Service(), SensorEventListener {
 
 
     //private var sensorSimulator = SensorSimulator()
+    // Creates a new HandlerThread named "SensorDataThread".
+    // This separate thread will be used to perform background operations.
     private val handlerThread = HandlerThread("SensorDataThread")
     private lateinit var sensorHandler: Handler
+    //  Creates a Handler associated with the Looper of the main thread (UI thread).
     private val sendDataHandler = Handler(Looper.getMainLooper())
-    private val interval = 5000L // 45
+    private val interval = 90000L // 45
     private lateinit var sensorManager: SensorManager
     private var heartRateSensor: Sensor? = null
     private var edaSensor: Sensor? = null
@@ -53,6 +56,7 @@ class SensorDataService :  Service(), SensorEventListener {
         if(heartRateSensor != null){
             Log.d(TAG,"EDA Sensor: $edaSensor")
         }
+        //simulator to simulate data without the google pixel watch
 //        sensorSimulator = SensorSimulator()
 //        sensorSimulator.addHeartRateListener { hr ->
 //            hrValues.add(hr)
@@ -61,22 +65,25 @@ class SensorDataService :  Service(), SensorEventListener {
 //            edaValues.add(eda)
 //        }
 //        sensorSimulator.startSimulation()
+        // Starts the HandlerThread, creating a separate thread with its own Looper.
         handlerThread.start()
+        //Initializes the sensorHandler with the Looper of the newly started HandlerThread.
+        // This allows the sensorHandler to manage operations on the separate thread.
         sensorHandler = Handler(handlerThread.looper)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startSensorReadings()
-        scheduleSendData()
+        scheduleSendData() //schedule every 90 seconds the features's sending
         return START_STICKY
     }
 
     private fun startSensorReadings() {
-        Log.d(TAG, "startSensorReading")
         startSensorReading(heartRateSensor)
         startSensorReading(edaSensor)
     }
 
+    //register the listener for the HR and EDA sensor
     private fun startSensorReading(sensor: Sensor?) {
         Log.d(TAG, "Starting reading sensor ${sensor?.type}")
         var delay = SensorManager.SENSOR_DELAY_NORMAL
@@ -92,24 +99,24 @@ class SensorDataService :  Service(), SensorEventListener {
                 )
         }
     }
-
     private fun stopSensorReading() {
         sensorManager.unregisterListener(this)
         handlerThread.quitSafely()
     }
 
     private fun scheduleSendData() {
-        Log.d(TAG, "ScheduleSendData")
         sendDataHandler.postDelayed({
             sendDataToMobile()
             scheduleSendData()
         }, interval)
     }
 
+    //clear the message queue and remove any pending Runnable tasks associated with sendDataHandler
     private fun cancelSendData() {
         sendDataHandler.removeCallbacksAndMessages(null)
     }
 
+    // call when the user clicks on "stop"
     override fun onDestroy() {
         super.onDestroy()
         //sensorSimulator.stopSimulation()
@@ -123,17 +130,15 @@ class SensorDataService :  Service(), SensorEventListener {
         return null
     }
 
+    //triggered when the sensors have new values
     override fun onSensorChanged(event: SensorEvent?) {
-        Log.d(TAG, "onSensorChanged")
         event?.let {
             when (event.sensor.type) {
                 Sensor.TYPE_HEART_RATE -> {
                     hrValues.add(event.values[0])
-                    Log.d("BVP", event.values[0].toString())
                 }
                 65554 ->{
                     edaValues.add(event.values[0])
-                    Log.d("EDA", event.values[0].toString())
                 }
                 else -> {}
             }
@@ -144,9 +149,6 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     private fun calculateFeatures(values: List<Float>, type: Boolean): List<Float> {
-        Log.e(TAG, "calculateFeatures")
-        Log.e(TAG, "Values: $values")
-
         val mean = values.average().toFloat()
         val max = values.maxOrNull() ?: 0f
         val min = values.minOrNull() ?: 0f
@@ -158,7 +160,6 @@ class SensorDataService :  Service(), SensorEventListener {
     }
 
     private fun calculateStdDev(values: List<Float>): Float {
-        Log.e(TAG, "calculateStdDev")
         val mean = values.average()
         val variance = values.map { (it - mean) * (it - mean) }.sum() / values.size
         return kotlin.math.sqrt(variance).toFloat()
@@ -189,9 +190,6 @@ class SensorDataService :  Service(), SensorEventListener {
         val tmpEda=edaValues.toList()
         hrValues.clear()
         edaValues.clear()
-        Log.d(TAG, "sendDataToMobile")
-        Log.d(TAG, "hr: $tmpHr")
-        Log.d(TAG, "eda: $tmpEda")
         if (tmpHr.isNotEmpty() || tmpEda.isNotEmpty()) {
             val hrFeatures = calculateFeatures(tmpHr.toList(), type = true)
             val edaFeatures = calculateFeatures(tmpEda.toList(), type = false)
@@ -204,6 +202,7 @@ class SensorDataService :  Service(), SensorEventListener {
         }
     }
 
+    //function to normalize data
     private fun scaleData(data: List<Float>): List<Float> {
         val mean = data.average().toFloat()
         val stdDev = calculateStdDev(data)
