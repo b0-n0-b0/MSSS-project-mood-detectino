@@ -22,7 +22,6 @@ import com.google.gson.Gson
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
-import com.spotify.sdk.android.auth.LoginActivity.REQUEST_CODE
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -34,14 +33,22 @@ import okio.IOException
 // Main activity of the application
 class MainActivity : ComponentActivity() {
 
+    // Instance of BroadcastReceiver that receives intents from Spotify
     private var spotifyReceiver = PlayerBroadcastReceiver()
+
+    // Label that represents the current mood of the user
     private var currentLabel = 0
+
+    // Access Token to access to the Spotify Web API
     private var accessToken = ""
+
+    // BroadcastReceiver for internal communication
     private var internalReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+
+            // When we receive mood label from the wearable device
             if (intent.action == getString(R.string.intent_wearabledata_received)){
                 currentLabel = intent.getIntExtra("label",0)
-                Log.d("MainActivity","internalReceiver")
 
                 // Get boundaries and recommended genres
                 val boundaries: Boundaries = getRangeFromLabel(currentLabel)
@@ -57,10 +64,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // When the activity is created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check Spotify installations
         val isInstalled = SpotifyAppRemote.isSpotifyInstalled(this)
-        if(!isInstalled){
+        // If Spotify is not installed, show an alert
+        if (!isInstalled) {
             val builder = AlertDialog.Builder(this@MainActivity)
             builder.setMessage("This app needs Spotify installed on the device!")
                 .setCancelable(false)
@@ -70,6 +81,7 @@ class MainActivity : ComponentActivity() {
             val alert = builder.create()
             alert.show()
         }
+        // Show the alert for Device Broadcast Status of the Spotify settings
         val builder = AlertDialog.Builder(this@MainActivity)
         builder.setMessage("This app needs Spotify  Device Broadcast Status on!")
             .setCancelable(false)
@@ -80,7 +92,8 @@ class MainActivity : ComponentActivity() {
             }
         val alert = builder.create()
         alert.show()
-        //internalReceiver setup
+
+        // internalReceiver setup
         val filter = IntentFilter()
         filter.addAction(getString(R.string.intent_spotify_connection_error))
         filter.addAction(getString(R.string.intent_wearabledata_received))
@@ -88,57 +101,57 @@ class MainActivity : ComponentActivity() {
             filter,
             ContextCompat.RECEIVER_EXPORTED)
 
-        //spotifyReceiver setup
+        // spotifyReceiver setup
+        // We are just interested in the skip of the track
         val spotifyFilter = IntentFilter().apply {
-            addAction(getString(R.string.intent_metadata_changed))
-            addAction(getString(R.string.intent_queue_changed))
-            addAction(getString(R.string.intent_playback_state_changed))}
+            addAction(getString(R.string.intent_metadata_changed)) }
+        // Spotify Receiver registration
         registerReceiver(spotifyReceiver, spotifyFilter, RECEIVER_EXPORTED)
+
+        // Content view setup
         setContentView(R.layout.main_activity)
         val startButton = findViewById<Button>(R.id.startButton)
-//        val stopButton = findViewById<Button>(R.id.stopButton)
+
+        // To start the service when the button is pressed
         startButton.setOnClickListener {
             sendMessage("/start","start")
             val serviceIntent = MessageService.createIntent(this@MainActivity)
             startService(serviceIntent)
         }
-
-//        stopButton.setOnClickListener {
-//            sendMessage("/stop","stop")
-//            val serviceIntent = MessageService.createIntent(this@MainActivity)
-//            stopService(serviceIntent)
-//        }
     }
 
+    // Method that requests login to Spotify
     private fun webApiLogin(){
-        Log.d("MainActivity","webApiLogin")
+
+        // Authorization parameters
         val clientId = getString(R.string.CLIENT_ID)
         val requestCode = R.integer.request_code
         val redirectUri = getString(R.string.REDIRECT_URI)
-
         val builder =
             AuthorizationRequest.Builder(clientId, AuthorizationResponse.Type.TOKEN, redirectUri)
 
         builder.setScopes(arrayOf("streaming"))
         val request = builder.build()
 
+        // Navigate to Spotify login activity
         AuthorizationClient.openLoginActivity(this, requestCode, request)
     }
 
     // Method called when Spotify login activity returns
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
-        Log.d("MainActivity","onActivityResult")
 
         // Check if result comes from the correct activity
         if (requestCode == R.integer.request_code) {
             val response = AuthorizationClient.getResponse(resultCode, intent)
 
+            // Check response type
             when (response.type) {
+                // If it's the access token, store it in a variable
                 AuthorizationResponse.Type.TOKEN -> {
-                    Log.d("Access Token", response.accessToken)
                     accessToken = response.accessToken
                 }
+                // If it's an error, no action
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle errors
                 }
@@ -147,6 +160,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // When the activity is in foreground
     override fun onStart() {
         super.onStart()
         webApiLogin()
@@ -160,6 +174,8 @@ class MainActivity : ComponentActivity() {
 
     // Get Request to the recommendation endpoint of Spotify Web API
     private fun fetchRecommendations(accessToken: String, seedGenres: String, boundaries: Boundaries) {
+
+        // Request URL
         val url = "https://api.spotify.com/v1/recommendations" +
                 "?limit=2" +
                 //"&seed_artists=$seedArtists" +
@@ -175,14 +191,20 @@ class MainActivity : ComponentActivity() {
             .addHeader("Authorization", "Bearer $accessToken")
             .build()
 
+        // GET request
         val client = OkHttpClient()
         client.newCall(request).enqueue(object : Callback {
+
+            // Request failed
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
 
+            // Response
             override fun onResponse(call: Call, response: Response) {
                 response.use {
+
+                    // If response is unsuccessful
                     if (!response.isSuccessful) {
                         println("Failed to get recommendations")
                         println("Response Code: ${response.code}")
@@ -191,18 +213,20 @@ class MainActivity : ComponentActivity() {
                         return
                     }
 
+                    // Otherwise, extract the json
                     val responseBody = response.body?.string()
                     val gson = Gson()
-                    if (responseBody != null) {
-                        Log.d("ResponseBody", responseBody)
-                    }
 
                     // Extract id, name and uri of each recommended track
                     val recommendations = gson.fromJson(responseBody, Recommendation::class.java)
                     val recs : ArrayList<String> = ArrayList<String>()
+
+                    // Create a list of URI, that are needed to add the tracks in queue
                     recommendations.tracks.forEach { track ->
                         recs.add(track.uri)
                     }
+
+                    // Start the service that communicates with Spotify and forward the recommendations
                     val intent = Intent(this@MainActivity, SpotifyService::class.java)
                     intent.putExtra("recommendations", recs)
                     intent.putExtra("label", currentLabel)
@@ -266,18 +290,21 @@ class MainActivity : ComponentActivity() {
         moodTextView.text = mood
     }
 
+    // When the activity is detroyed
     override fun onDestroy() {
         super.onDestroy()
+
+        // Unregister the internal BroadcastReceiver
         unregisterReceiver(internalReceiver)
     }
 
-
+    // Method that send a message to the wearable device to start the communication
     fun sendMessage(messagePath: String, data: String) {
         val nodeIdsTask: Task<List<Node>> = Wearable.getNodeClient(this).connectedNodes
         val byteArray = data.toByteArray(Charsets.UTF_8)
         nodeIdsTask.addOnSuccessListener { nodes ->
             for (node in nodes) {
-                Log.d(ContentValues.TAG, "nodo: $node.id")
+                Log.d(ContentValues.TAG, "node: $node.id")
                 val sendMessageTask = Wearable.getMessageClient(this).sendMessage(node.id, messagePath, byteArray)
                 sendMessageTask.addOnSuccessListener {
                     Log.d(ContentValues.TAG, "Message sent successfully")
