@@ -19,9 +19,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 
+// Service that connects and communicates with Spotify SDK
 class SpotifyService : Service() {
+
+    // To connect to Spotify SDK
     private var spotifyAppRemote: SpotifyAppRemote? = null
-    private var oldLabel: Int? = -1
+
+    // Start Service
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         connectToSpotify(intent)
         return START_STICKY
@@ -31,7 +35,10 @@ class SpotifyService : Service() {
         return null;
     }
 
+    // Method that request a connection with Spotify SDK
     private fun connectToSpotify(intent: Intent?) {
+
+        // Connection parameters
         val clientId = getString(R.string.CLIENT_ID)
         val redirectUri = getString(R.string.REDIRECT_URI)
         val connectionParams = ConnectionParams.Builder(clientId)
@@ -39,8 +46,11 @@ class SpotifyService : Service() {
             .showAuthView(true)
             .build()
 
+        // Try to disconnect and then connect to Spotify SDK (default approach)
         SpotifyAppRemote.disconnect(spotifyAppRemote);
         SpotifyAppRemote.connect(this, connectionParams, object : Connector.ConnectionListener {
+
+            // Connection successfull
             override fun onConnected(appRemote: SpotifyAppRemote) {
                 spotifyAppRemote = appRemote
                 Log.d("SpotifyService","connected")
@@ -48,45 +58,18 @@ class SpotifyService : Service() {
                 var recommendations = intent?.getStringArrayListExtra("recommendations")
                 handleRecommendations(label, recommendations)
             }
+            // Connection failed
             override fun onFailure(error: Throwable) {
                 Log.d("SpotifyService","not connected")
-                //TODO:handle errors
             }
         })
     }
 
-    private fun test(){
-        spotifyAppRemote?.let {
-            // Play a playlist
-            val playlistURI = "spotify:playlist:37i9dQZF1DX2sUQwD7tbmL"
-            it.playerApi.play(playlistURI)
-            // Subscribe to PlayerState
-            it.playerApi.subscribeToPlayerState().setEventCallback {
-                val track: Track = it.track
-                Log.d("MainActivity", track.name + " by " + track.artist.name)
-            }
-        }
-    }
-
+    // Method that handles the recommendation (check blacklist and add in queue)
     private fun handleRecommendations(label: Int?, recommendations: ArrayList<String>?){
-        Log.d("SpotifyService", "label $label")
-        Log.d("SpotifyService", "reccomentations: $recommendations")
         spotifyAppRemote?.let {
             it.playerApi.playerState
                 .setResultCallback { playerState ->
-
-                    // TODO TOGLIERE IL CONTROLLO DEL PLAYER isPaused
-                    if (!playerState.isPaused) {
-                        // do stuff
-                        // it.playerApi.play(recommendations?.get(0))
-
-                        //TODO:if oldLabel != label -> empty queue
-                        if (oldLabel != label) {
-
-                        }
-
-                        //TODO:check queue length < N -> add only if true
-                    }
 
                     // For each recommended track
                     recommendations?.forEachIndexed { i, rec ->
@@ -108,9 +91,6 @@ class SpotifyService : Service() {
                             // Coroutine to access database
                             GlobalScope.launch(Dispatchers.IO){
 
-                                // DEBUG CLEAN TABLE
-                                // repository.deleteAll()
-
                                 // Check if the track is in the blacklist
                                 val blacklist = repository.getTrackByUri(rec)
 
@@ -128,14 +108,8 @@ class SpotifyService : Service() {
                     }
                 }
                 .setErrorCallback { throwable ->
-                    //TODO: handle errors
-                };
-            //save label
-            oldLabel = label
+                    Log.d("SpotifyService", "Error during recommendations")
+                }
         }
-    }
-
-    private fun insertInQueue(songUri: String){
-        spotifyAppRemote?.playerApi?.queue(songUri)
     }
 }
