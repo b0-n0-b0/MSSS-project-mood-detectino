@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setTheme(android.R.style.Theme_DeviceDefault)
-        setContent {
+        setContent { //to manage button visibility
             WearApp("Android", isStartButtonVisible,isCaptureActive) {
                 if(isStartButtonVisible) {
                     startSensorDataService()
@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
 
             }
         }
+        // add listener for incoming messages from smartphone
         messageClient = Wearable.getMessageClient(this)
         messageClient.addListener(this)
 
@@ -83,16 +84,10 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
     override fun onMessageReceived(p0: MessageEvent) {
         val data = String(p0.data)
         when (data) {
-            "start" -> {
+            "start" -> { //received start command and check for body sensor permission
                 Log.d(ContentValues.TAG, "Received start command from mobile device")
                 requestBodySensorsPermissionAndStartService()
-
             }
-
-//            "stop" -> {
-//                Log.d(ContentValues.TAG, "Received stop command from mobile device")
-//                stopSensorDataService()
-//            }
         }
     }
 
@@ -105,6 +100,7 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
         ) {
             requestPermissionLauncher.launch(permission)
         } else {
+            //change button visibility to call startSensorDataService
             isStartButtonVisible = true
         }
     }
@@ -119,14 +115,15 @@ class MainActivity : ComponentActivity() , MessageClient.OnMessageReceivedListen
             }
         }
 
+    //start service for sampling data sensor
     private fun startSensorDataService() {
         val intent = Intent(this, SensorDataService::class.java)
-//        intent.action = SensorDataService.ACTION_START
         startService(intent)
         isCaptureActive= true
         isStartButtonVisible=false
     }
 
+    //stop service and change button visibility
     private fun stopSensorDataService() {
         val intent = Intent(this, SensorDataService::class.java)
         stopService(intent)

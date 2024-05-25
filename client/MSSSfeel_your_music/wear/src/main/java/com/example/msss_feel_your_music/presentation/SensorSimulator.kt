@@ -1,7 +1,7 @@
 package com.example.msss_feel_your_music.presentation
 
 import kotlin.random.Random
-
+//class to simulate value to test without the wearable device
 class SensorSimulator {
     private var heartRateListeners = mutableListOf<(Float) -> Unit>()
     private var edaListeners = mutableListOf<(Float) -> Unit>()
